@@ -13,7 +13,12 @@ out vec4 fColor;
 out vec2 fPos;
 
 void main(){
-    fColor = uColor;
+    if (uInteract == 1) {
+        float tint = (uColor.r + uColor.g + uColor.b)/3.5;
+        fColor = uColor + vec4(tint,tint,tint, 0.0);
+    } else {
+        fColor = uColor;
+    }
     fPos = aPos;
     // Apply 2D transformation to the vertex position
     vec3 transformedPos = vec3(uTransform * vec3(aPos.xy, 1.0));

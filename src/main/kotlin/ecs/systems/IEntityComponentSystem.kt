@@ -2,8 +2,11 @@ package ecs.systems
 
 import ecs.ECSController
 
-interface IEntityComponentSystem {
-    fun start()
-    fun stop()
-    fun update(controller: ECSController, dt: Float)
+abstract class IEntityComponentSystem {
+    protected lateinit var controller : ECSController
+    open fun start(controller: ECSController) {
+        this.controller = controller
+    }
+    open fun stop(){}
+    open fun update(dt: Float){}
 }

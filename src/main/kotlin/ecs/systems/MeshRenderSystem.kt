@@ -15,7 +15,7 @@ import imgui.enums.ImGuiCond
 import org.lwjgl.opengl.GL45.*
 
 //todo: for now it takes in the first camera component that exist and takes that as base thingy
-object MeshRenderSystem : IEntityComponentSystem, IImGuiWindow {
+object MeshRenderSystem : IEntityComponentSystem(), IImGuiWindow {
     private val flatShader : ShaderObject = Shader.FLAT_OBJECT.get()
     private val openShader : ShaderObject = Shader.OPEN_OBJECT.get()
 
@@ -23,10 +23,13 @@ object MeshRenderSystem : IEntityComponentSystem, IImGuiWindow {
 
     private val showWireFrames = ImBool()
 
-    override fun start() {
+    override fun start(controller: ECSController) {
+        super.start(controller)
         ImGuiController.addGui(this)
     }
+
     override fun stop() {
+        super.stop()
         ImGuiController.removeGui(this)
     }
     override fun showUi() {
@@ -38,7 +41,8 @@ object MeshRenderSystem : IEntityComponentSystem, IImGuiWindow {
         ImGui.end()
     }
 
-    override fun update(controller: ECSController, dt: Float) {
+    override fun update( dt: Float) {
+        super.update(dt)
         val flatMeshes = controller.getComponents<FlatMeshComponent>()
         val openMeshes = controller.getComponents<OpenMeshComponent>()
         val transforms = controller.getComponents<TransformComponent>()

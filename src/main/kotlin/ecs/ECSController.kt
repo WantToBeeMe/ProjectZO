@@ -1,6 +1,7 @@
 package ecs
 
 import ecs.components.*
+import ecs.components.hitbox.HitBoxComponent
 import ecs.systems.IEntityComponentSystem
 import ecs.systems.MeshInteractSystem
 import ecs.systems.MeshRenderSystem
@@ -9,15 +10,16 @@ import kotlin.reflect.KClass
 class ECSController {
 
     val componentsTypes: Map< KClass<*>, MutableMap<Int, *>> = mapOf(
-        TransformComponent::class      to  mutableMapOf<Int, TransformComponent>(),
-        FlatMeshComponent::class       to mutableMapOf<Int, FlatMeshComponent >(),
-        OpenMeshComponent::class       to mutableMapOf<Int, FlatMeshComponent>(),
-        CameraComponent::class         to  mutableMapOf<Int, CameraComponent>(),
-       // MovementInputComponent::class  to  mutableMapOf<Int, MovementInputComponent>(),
+            TransformComponent::class      to  mutableMapOf<Int, TransformComponent>(),
+            FlatMeshComponent::class       to  mutableMapOf<Int, FlatMeshComponent >(),
+            OpenMeshComponent::class       to  mutableMapOf<Int, FlatMeshComponent>(),
+            CameraComponent::class         to  mutableMapOf<Int, CameraComponent>(),
+            HitBoxComponent::class         to  mutableMapOf<Int, HitBoxComponent>(),
+            // MovementInputComponent::class  to  mutableMapOf<Int, MovementInputComponent>(),
     )
 
     private val systems : Array<IEntityComponentSystem> = arrayOf(
-        MeshInteractSystem,MeshRenderSystem
+        MeshInteractSystem ,MeshRenderSystem
     )
 
     private var entityIndex = 0
@@ -77,7 +79,7 @@ class ECSController {
 
     fun start(){
         for(system in systems){
-            system.start()
+            system.start(this)
         }
     }
     fun stop(){
@@ -88,7 +90,7 @@ class ECSController {
 
     fun update(dt:Float){
         for(system in systems){
-            system.update(this, dt)
+            system.update( dt)
         }
     }
 }
