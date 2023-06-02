@@ -7,9 +7,15 @@ import ecs.components.CameraComponent
 import ecs.components.FlatMeshComponent
 import ecs.components.TransformComponent
 import ecs.components.hitbox.HitBoxComponent
+import imgui.ImBool
+import imgui.ImGui
 import org.joml.Vector2f
+import kotlin.math.cos
+import kotlin.math.sin
 
 object MeshInteractSystem : IEntityComponentSystem(){
+
+    private val showHitBox = ImBool()
 
     override fun update(dt: Float) {
         super.update(dt)
@@ -30,7 +36,6 @@ object MeshInteractSystem : IEntityComponentSystem(){
         }
     }
 
-
     private fun transformPoint(point: Vector2f, transform: TransformComponent? ): Vector2f {
         if(transform == null) return point
         val rotatedPoint = rotatePoint(point, transform.getRotation(true))
@@ -40,8 +45,8 @@ object MeshInteractSystem : IEntityComponentSystem(){
 
     private fun rotatePoint(point: Vector2f, rotation: Float): Vector2f {
         val angleRad = Math.toRadians(rotation.toDouble()).toFloat()
-        val cos = Math.cos(angleRad.toDouble()).toFloat()
-        val sin = Math.sin(angleRad.toDouble()).toFloat()
+        val cos = cos(angleRad.toDouble()).toFloat()
+        val sin = sin(angleRad.toDouble()).toFloat()
         val x = point.x * cos - point.y * sin
         val y = point.x * sin + point.y * cos
         return Vector2f(x, y)
@@ -56,6 +61,15 @@ object MeshInteractSystem : IEntityComponentSystem(){
         val y = point.y + translation.y
         return Vector2f(x, y)
     }
+    override fun guiOptions() {
+        ImGui.pushID("Mesh_Interact_System");
+        if (ImGui.beginTabItem("HitBox" )) {
+            ImGui.checkbox("Show HitBoxes",showHitBox)
+            ImGui.endTabItem();
+        }
+        ImGui.popID()
+    }
+
 }
 
 

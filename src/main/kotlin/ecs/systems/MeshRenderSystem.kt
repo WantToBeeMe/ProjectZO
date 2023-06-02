@@ -15,7 +15,7 @@ import imgui.enums.ImGuiCond
 import org.lwjgl.opengl.GL45.*
 
 //todo: for now it takes in the first camera component that exist and takes that as base thingy
-object MeshRenderSystem : IEntityComponentSystem(), IImGuiWindow {
+object MeshRenderSystem : IEntityComponentSystem() {
     private val flatShader : ShaderObject = Shader.FLAT_OBJECT.get()
     private val openShader : ShaderObject = Shader.OPEN_OBJECT.get()
 
@@ -25,20 +25,6 @@ object MeshRenderSystem : IEntityComponentSystem(), IImGuiWindow {
 
     override fun start(controller: ECSController) {
         super.start(controller)
-        ImGuiController.addGui(this)
-    }
-
-    override fun stop() {
-        super.stop()
-        ImGuiController.removeGui(this)
-    }
-    override fun showUi() {
-        ImGui.setNextWindowSize(420f, 100f, ImGuiCond.Once)
-        ImGui.setNextWindowPos(0f, 240f, ImGuiCond.Once)
-        ImGui.begin("Mesh Renderer") // Start Custom window
-        // Simple checkbox to show demo window
-        ImGui.checkbox("Show wireframe", showWireFrames)
-        ImGui.end()
     }
 
     override fun update( dt: Float) {
@@ -91,13 +77,15 @@ object MeshRenderSystem : IEntityComponentSystem(), IImGuiWindow {
             mesh.value.render()
         }
         currentShader.detach()
-
-
     }
 
-    private fun rendering(){
-
+    override fun guiOptions() {
+        ImGui.pushID("Mesh_Renderer_System");
+        if (ImGui.beginTabItem("Renderer" )) {
+            ImGui.checkbox("Show wireframe", showWireFrames)
+            ImGui.endTabItem();
+        }
+        ImGui.popID()
     }
-
 
 }

@@ -1,13 +1,18 @@
 package ecs
 
+import base.util.IImGuiWindow
+import base.util.ImGuiController
 import ecs.components.*
 import ecs.components.hitbox.HitBoxComponent
 import ecs.systems.IEntityComponentSystem
 import ecs.systems.MeshInteractSystem
 import ecs.systems.MeshRenderSystem
+import imgui.ImGui
+import imgui.enums.ImGuiCond
+import imgui.enums.ImGuiTabBarFlags
 import kotlin.reflect.KClass
 
-class ECSController {
+class ECSController : IImGuiWindow {
 
     val componentsTypes: Map< KClass<*>, MutableMap<Int, *>> = mapOf(
             TransformComponent::class      to  mutableMapOf<Int, TransformComponent>(),
@@ -78,11 +83,13 @@ class ECSController {
     }
 
     fun start(){
+        ImGuiController.addGui(this)
         for(system in systems){
             system.start(this)
         }
     }
     fun stop(){
+        ImGuiController.removeGui(this)
         for(system in systems){
             system.stop()
         }
@@ -93,4 +100,19 @@ class ECSController {
             system.update( dt)
         }
     }
+
+    override fun showUi() {
+        ImGui.setNextWindowSize(420f, 100f, ImGuiCond.Once)
+        ImGui.setNextWindowPos(0f, 240f, ImGuiCond.Once)
+        ImGui.begin("ECS systems") // Start Custom window
+
+        if (ImGui.beginTabBar("##ECS_CONTROLLER_TASKBAR", ImGuiTabBarFlags.None )) {
+            for(system in systems) {
+                system.guiOptions()
+            }
+        ImGui.endTabBar();
+        }
+        ImGui.end()
+    }
+
 }
