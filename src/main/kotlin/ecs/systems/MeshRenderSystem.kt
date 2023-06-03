@@ -18,14 +18,8 @@ import org.lwjgl.opengl.GL45.*
 object MeshRenderSystem : IEntityComponentSystem() {
     private val flatShader : ShaderObject = Shader.FLAT_OBJECT.get()
     private val openShader : ShaderObject = Shader.OPEN_OBJECT.get()
-
     private val identityTransform = TransformComponent()
-
-    private val showWireFrames = ImBool()
-
-    override fun start(controller: ECSController) {
-        super.start(controller)
-    }
+    private val showWireFrames = ImBool(false)
 
     override fun update( dt: Float) {
         super.update(dt)
@@ -80,12 +74,10 @@ object MeshRenderSystem : IEntityComponentSystem() {
     }
 
     override fun guiOptions() {
-        ImGui.pushID("Mesh_Renderer_System");
         if (ImGui.beginTabItem("Renderer" )) {
             ImGui.checkbox("Show wireframe", showWireFrames)
             ImGui.endTabItem();
         }
-        ImGui.popID()
     }
 
 }

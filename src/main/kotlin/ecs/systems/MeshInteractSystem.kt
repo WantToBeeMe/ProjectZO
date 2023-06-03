@@ -1,77 +1,90 @@
 package ecs.systems
 
 import base.input.Mouse
+import base.shader.Shader
+import base.shader.ShaderObject
 import base.util.Window
-import ecs.ECSController
 import ecs.components.CameraComponent
 import ecs.components.FlatMeshComponent
 import ecs.components.TransformComponent
-import ecs.components.hitbox.HitBoxComponent
+import ecs.components.clickBox.ClickBoxComponent
+import ecs.components.clickBox.MouseClickBoxVisualizer
 import imgui.ImBool
 import imgui.ImGui
 import org.joml.Vector2f
+import org.joml.Vector4f
 import kotlin.math.cos
 import kotlin.math.sin
 
 object MeshInteractSystem : IEntityComponentSystem(){
-
-    private val showHitBox = ImBool()
+    private val currentShader : ShaderObject = Shader.FLAT_OBJECT.get()
+    private val noTransform =  TransformComponent().transform
+    private val showClickBox = ImBool(false)
 
     override fun update(dt: Float) {
         super.update(dt)
         val transforms = controller.getComponents<TransformComponent>()
-        val flatHitBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, HitBoxComponent>()
+        val flatClickBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, ClickBoxComponent>()
 
         val cameras = controller. getComponents<CameraComponent>()
         val cameraID = cameras.keys.first()
-        val mousePos = Vector2f( ((Mouse.getX()/Window.getWidth())*2f -1f)* cameras[cameraID]!!.aspect ,-(Mouse.getY()/Window.getHeight() ) *2f +1f)
-        for(hitBoxMesh in flatHitBoxMeshes){
-            val newMousePoint  =transformPoint(mousePos, transforms[hitBoxMesh.key])
-
-            if( hitBoxMesh.value.second.isInside(newMousePoint) ){
-                hitBoxMesh.value.first.interact = 1
+        val realMousePos = Vector2f( ((Mouse.getX()/Window.getWidth())*2f -1f)* cameras[cameraID]!!.aspect ,-(Mouse.getY()/Window.getHeight() ) *2f +1f)
+        for(clickBoxMesh in flatClickBoxMeshes){
+            val transformedMousePos  = transformPoint(realMousePos, transforms[clickBoxMesh.key])
+            if( clickBoxMesh.value.second.isInside(transformedMousePos) ){
+                clickBoxMesh.value.first.interact = 1
             }
-            else hitBoxMesh.value.first.interact = 0
+            else clickBoxMesh.value.first.interact = 0
+        }
 
+        if(showClickBox.get()){
+            currentShader.use()
+            currentShader.enableBlend()
+            currentShader.enableDepthTest()
+            currentShader.uploadMat4f("uProjection", cameras[cameraID]!!.projectionMatrix )
+            currentShader.uploadMat4f("uView", cameras[cameraID]!!.viewMatrix)
+            currentShader.uploadMat3f("uTransform", noTransform)
+            currentShader.uploadFloat("uDepth", 1f)
+            currentShader.uploadInt("uInteract", 0)
+
+            for(clickBoxMesh in flatClickBoxMeshes){
+                if(!clickBoxMesh.value.second.showDebugLines) continue
+                currentShader.uploadVec4f("uColor", Vector4f(1f,1f,clickBoxMesh.value.first.interact.toFloat(),1f))
+                clickBoxMesh.value.second.renderClickBox()
+                val transformedMousePos  = transformPoint(realMousePos, transforms[clickBoxMesh.key])
+                currentShader.uploadVec4f("uColor", Vector4f(1f,0f,1f,1f))
+                MouseClickBoxVisualizer.renderMouse(transformedMousePos.x, transformedMousePos.y)
+            }
+
+            currentShader.detach()
         }
     }
+
+
 
     private fun transformPoint(point: Vector2f, transform: TransformComponent? ): Vector2f {
         if(transform == null) return point
-        val rotatedPoint = rotatePoint(point, transform.getRotation(true))
-        val scaledPoint = scalePoint(rotatedPoint, transform.getScale())
-        return translatePoint(scaledPoint, transform.getPosition())
-    }
+        //translation
+        var newPoint = Vector2f(point).add(Vector2f(transform.getPosition()).mul(-1f))
 
-    private fun rotatePoint(point: Vector2f, rotation: Float): Vector2f {
-        val angleRad = Math.toRadians(rotation.toDouble()).toFloat()
+        //rotate
+        val angleRad = transform.getRotation(true)
         val cos = cos(angleRad.toDouble()).toFloat()
         val sin = sin(angleRad.toDouble()).toFloat()
-        val x = point.x * cos - point.y * sin
-        val y = point.x * sin + point.y * cos
-        return Vector2f(x, y)
+        newPoint = Vector2f(newPoint.x * cos - newPoint.y * sin,  newPoint.x * sin + newPoint.y * cos)
+        //scale
+        return newPoint.mul(Vector2f(1f).div(transform.getScale()))
     }
-    private fun scalePoint(point: Vector2f, scale: Vector2f): Vector2f {
-        val x = point.x * scale.x
-        val y = point.y * scale.y
-        return Vector2f(x, y)
-    }
-    private fun translatePoint(point: Vector2f, translation: Vector2f): Vector2f {
-        val x = point.x + translation.x
-        val y = point.y + translation.y
-        return Vector2f(x, y)
-    }
+
+
     override fun guiOptions() {
-        ImGui.pushID("Mesh_Interact_System");
-        if (ImGui.beginTabItem("HitBox" )) {
-            ImGui.checkbox("Show HitBoxes",showHitBox)
+        if (ImGui.beginTabItem("ClickBox" )) {
+            ImGui.checkbox("Show ClickBoxes",showClickBox)
             ImGui.endTabItem();
         }
-        ImGui.popID()
     }
 
 }
-
 
 
 

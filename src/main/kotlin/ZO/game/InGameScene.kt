@@ -17,7 +17,6 @@ class InGameScene : IScene() {
 
     override fun loop(dt : Float){
         super.loop(dt)
-
     }
 
     override fun stop() {

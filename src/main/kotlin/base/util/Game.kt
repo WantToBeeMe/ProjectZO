@@ -28,7 +28,7 @@ object Game : IKeyboardObserver {
     }
 
     fun changeScene(newScene : IScene){
-        if(::scene.isInitialized) newScene.stop()
+        if(::scene.isInitialized) scene.stop()
         scene = newScene
         scene.start()
     }

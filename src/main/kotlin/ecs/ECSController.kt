@@ -3,13 +3,15 @@ package ecs
 import base.util.IImGuiWindow
 import base.util.ImGuiController
 import ecs.components.*
-import ecs.components.hitbox.HitBoxComponent
+import ecs.components.clickBox.ClickBoxComponent
 import ecs.systems.IEntityComponentSystem
 import ecs.systems.MeshInteractSystem
 import ecs.systems.MeshRenderSystem
+import imgui.ImBool
 import imgui.ImGui
 import imgui.enums.ImGuiCond
 import imgui.enums.ImGuiTabBarFlags
+import imgui.enums.ImGuiWindowFlags
 import kotlin.reflect.KClass
 
 class ECSController : IImGuiWindow {
@@ -19,7 +21,7 @@ class ECSController : IImGuiWindow {
             FlatMeshComponent::class       to  mutableMapOf<Int, FlatMeshComponent >(),
             OpenMeshComponent::class       to  mutableMapOf<Int, FlatMeshComponent>(),
             CameraComponent::class         to  mutableMapOf<Int, CameraComponent>(),
-            HitBoxComponent::class         to  mutableMapOf<Int, HitBoxComponent>(),
+            ClickBoxComponent::class         to  mutableMapOf<Int, ClickBoxComponent>(),
             // MovementInputComponent::class  to  mutableMapOf<Int, MovementInputComponent>(),
     )
 
@@ -81,13 +83,13 @@ class ECSController : IImGuiWindow {
             cam.resizeViewPort(width.toFloat(), height.toFloat())
         }
     }
-
     fun start(){
         ImGuiController.addGui(this)
         for(system in systems){
             system.start(this)
         }
     }
+
     fun stop(){
         ImGuiController.removeGui(this)
         for(system in systems){
@@ -102,13 +104,15 @@ class ECSController : IImGuiWindow {
     }
 
     override fun showUi() {
-        ImGui.setNextWindowSize(420f, 100f, ImGuiCond.Once)
-        ImGui.setNextWindowPos(0f, 240f, ImGuiCond.Once)
-        ImGui.begin("ECS systems") // Start Custom window
+        ImGui.setNextWindowSize(250f, 100f, ImGuiCond.Once)
+        ImGui.setNextWindowPos(0f, 140f, ImGuiCond.Once)
+        ImGui.begin(this.toString() )
 
         if (ImGui.beginTabBar("##ECS_CONTROLLER_TASKBAR", ImGuiTabBarFlags.None )) {
             for(system in systems) {
+                ImGui.pushID(system.toString());
                 system.guiOptions()
+                ImGui.popID();
             }
         ImGui.endTabBar();
         }
