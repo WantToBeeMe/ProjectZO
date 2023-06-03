@@ -5,6 +5,7 @@ import org.lwjgl.opengl.GL45.*
 
 class ClickBoxComponent {
     private val clickBoxes : MutableList<IClickBox> = mutableListOf()
+    var hold = false
 
     private var vertices : FloatArray = FloatArray(0)
     private var lines : IntArray = IntArray(0)
@@ -19,6 +20,37 @@ class ClickBoxComponent {
     }
     fun removeClickBox(box : IClickBox) : Boolean{
         return clickBoxes.remove(box)
+    }
+
+    var onEnterEvent: ((Vector2f, Vector2f) -> Unit)? = null; private set
+    var onLeaveEvent: ((Vector2f, Vector2f) -> Unit)? = null; private set
+    var onClickEvent: ((Vector2f, Vector2f, Int) -> Unit)? = null; private set
+    var onReleaseEvent: ((Vector2f, Vector2f, Int) -> Unit)? = null; private set
+    var whileHoverEvent: ((Vector2f, Vector2f) -> Unit)? = null; private set
+    var whileClickEvent: ((Vector2f, Vector2f) -> Unit)? = null; private set
+    fun setOnEnter(event :  ((Vector2f, Vector2f) -> Unit)? ) : ClickBoxComponent{
+        onEnterEvent = event
+        return this
+    }
+    fun setOnLeave(event :  ((Vector2f, Vector2f) -> Unit)?): ClickBoxComponent{
+        onLeaveEvent = event
+        return this
+    }
+    fun setOnClick(event :  ((Vector2f, Vector2f, Int) -> Unit)?) : ClickBoxComponent{
+        onClickEvent = event
+        return this
+    }
+    fun setOnRelease(event :  ((Vector2f, Vector2f, Int) -> Unit)?) : ClickBoxComponent{
+        onReleaseEvent = event
+        return this
+    }
+    fun setWhileClick(event :  ((Vector2f, Vector2f) -> Unit)?) :  ClickBoxComponent{
+        whileClickEvent = event
+        return this
+    }
+    fun setWhileHover(event :  ((Vector2f, Vector2f) -> Unit)?):  ClickBoxComponent{
+        whileHoverEvent = event
+        return this
     }
 
     fun isInside(point: Vector2f): Boolean {
@@ -54,9 +86,12 @@ class ClickBoxComponent {
 
         for(box in clickBoxes){
             val a = box.getBoxOutline()
+            a.second.forEach { num -> num+(vertices.size/2) }
+            val newLines = a.second.mapIndexed { index, num ->
+                num + (vertices.size / 2)
+            }.toIntArray()
             vertices += a.first
-            a.second.forEach { num -> num+lines.size }
-            lines += a.second
+            lines += newLines
         }
 
         //generate and bind a vertex array object

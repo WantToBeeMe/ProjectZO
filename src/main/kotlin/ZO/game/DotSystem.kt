@@ -5,7 +5,7 @@ import base.input.Mouse
 import base.util.Window
 import ecs.ECSController
 import ecs.components.CameraComponent
-import ecs.components.FlatMeshComponent
+import ecs.components.mesh.FlatMeshComponent
 import ecs.components.TransformComponent
 import org.joml.Vector4f
 import kotlin.math.cos

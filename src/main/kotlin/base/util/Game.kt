@@ -48,9 +48,5 @@ object Game : IKeyboardObserver {
             Window.setFocus(true)
             setPaused(!_paused)
         }
-
-        if(key == GLFW.GLFW_KEY_N) {
-            changeScene(InGameScene())
-        }
     }
 }

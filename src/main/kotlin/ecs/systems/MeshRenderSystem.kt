@@ -2,16 +2,12 @@ package ecs.systems
 
 import base.shader.Shader
 import base.shader.ShaderObject
-import base.util.IImGuiWindow
-import base.util.ImGuiController
-import ecs.ECSController
 import ecs.components.CameraComponent
-import ecs.components.FlatMeshComponent
-import ecs.components.OpenMeshComponent
+import ecs.components.mesh.FlatMeshComponent
+import ecs.components.mesh.OpenMeshComponent
 import ecs.components.TransformComponent
 import imgui.ImBool
 import imgui.ImGui
-import imgui.enums.ImGuiCond
 import org.lwjgl.opengl.GL45.*
 
 //todo: for now it takes in the first camera component that exist and takes that as base thingy

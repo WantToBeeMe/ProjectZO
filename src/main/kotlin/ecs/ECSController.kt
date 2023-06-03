@@ -4,21 +4,21 @@ import base.util.IImGuiWindow
 import base.util.ImGuiController
 import ecs.components.*
 import ecs.components.clickBox.ClickBoxComponent
+import ecs.components.mesh.FlatMeshComponent
+import ecs.components.mesh.OpenMeshComponent
 import ecs.systems.IEntityComponentSystem
 import ecs.systems.MeshInteractSystem
 import ecs.systems.MeshRenderSystem
-import imgui.ImBool
 import imgui.ImGui
 import imgui.enums.ImGuiCond
 import imgui.enums.ImGuiTabBarFlags
-import imgui.enums.ImGuiWindowFlags
 import kotlin.reflect.KClass
 
 class ECSController : IImGuiWindow {
 
     val componentsTypes: Map< KClass<*>, MutableMap<Int, *>> = mapOf(
             TransformComponent::class      to  mutableMapOf<Int, TransformComponent>(),
-            FlatMeshComponent::class       to  mutableMapOf<Int, FlatMeshComponent >(),
+            FlatMeshComponent::class       to  mutableMapOf<Int, FlatMeshComponent>(),
             OpenMeshComponent::class       to  mutableMapOf<Int, FlatMeshComponent>(),
             CameraComponent::class         to  mutableMapOf<Int, CameraComponent>(),
             ClickBoxComponent::class         to  mutableMapOf<Int, ClickBoxComponent>(),
@@ -98,16 +98,23 @@ class ECSController : IImGuiWindow {
     }
 
     fun update(dt:Float){
+        currentTick++
+        if(currentTick >= 12) {
+            timeDisplay = (1/dt).toInt().toString()
+            currentTick = 0
+        }
         for(system in systems){
             system.update( dt)
         }
     }
-
+    private var currentTick = 0
+    private var timeDisplay = ""
     override fun showUi() {
         ImGui.setNextWindowSize(250f, 100f, ImGuiCond.Once)
         ImGui.setNextWindowPos(0f, 140f, ImGuiCond.Once)
         ImGui.begin(this.toString() )
 
+        ImGui.text(timeDisplay)
         if (ImGui.beginTabBar("##ECS_CONTROLLER_TASKBAR", ImGuiTabBarFlags.None )) {
             for(system in systems) {
                 ImGui.pushID(system.toString());

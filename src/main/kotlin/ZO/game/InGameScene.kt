@@ -2,7 +2,7 @@ package ZO.game
 
 import base.util.IScene
 import ecs.components.CameraComponent
-import ecs.components.OpenMeshComponent
+import ecs.components.mesh.OpenMeshComponent
 import org.joml.Vector4f
 
 

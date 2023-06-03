@@ -1,14 +1,16 @@
 package ecs.systems
 
+import base.input.IMouseClickObserver
 import base.input.Mouse
 import base.shader.Shader
 import base.shader.ShaderObject
 import base.util.Window
+import ecs.ECSController
 import ecs.components.CameraComponent
-import ecs.components.FlatMeshComponent
 import ecs.components.TransformComponent
 import ecs.components.clickBox.ClickBoxComponent
 import ecs.components.clickBox.MouseClickBoxVisualizer
+import ecs.components.mesh.FlatMeshComponent
 import imgui.ImBool
 import imgui.ImGui
 import org.joml.Vector2f
@@ -16,42 +18,67 @@ import org.joml.Vector4f
 import kotlin.math.cos
 import kotlin.math.sin
 
-object MeshInteractSystem : IEntityComponentSystem(){
+object MeshInteractSystem : IEntityComponentSystem() , IMouseClickObserver{
     private val currentShader : ShaderObject = Shader.FLAT_OBJECT.get()
     private val noTransform =  TransformComponent().transform
     private val showClickBox = ImBool(false)
+
+    override fun stop() {
+        super.stop()
+        Mouse.unSubscribe(this)
+    }
+    override fun start(controller: ECSController) {
+        super.start(controller)
+        Mouse.subscribe(this)
+    }
 
     override fun update(dt: Float) {
         super.update(dt)
         val transforms = controller.getComponents<TransformComponent>()
         val flatClickBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, ClickBoxComponent>()
 
-        val cameras = controller. getComponents<CameraComponent>()
-        val cameraID = cameras.keys.first()
-        val realMousePos = Vector2f( ((Mouse.getX()/Window.getWidth())*2f -1f)* cameras[cameraID]!!.aspect ,-(Mouse.getY()/Window.getHeight() ) *2f +1f)
-        for(clickBoxMesh in flatClickBoxMeshes){
-            val transformedMousePos  = transformPoint(realMousePos, transforms[clickBoxMesh.key])
-            if( clickBoxMesh.value.second.isInside(transformedMousePos) ){
-                clickBoxMesh.value.first.interact = 1
+        val mouseX = Mouse.getX()
+        val mouseY = Mouse.getY()
+        val realMousePos = getRealMousePosition(mouseX.toDouble(), mouseY.toDouble())
+
+        for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
+            val transformedMousePos = transformPoint(realMousePos, transforms[entityID])
+            if (clickBoxMesh.second.isInside(transformedMousePos)) {
+                if (clickBoxMesh.first.interact == 1) {
+                    clickBoxMesh.second.whileHoverEvent?.let { it(Vector2f(mouseX, mouseY), realMousePos) }
+                } else {
+                    clickBoxMesh.second.onEnterEvent?.let { it(Vector2f(mouseX, mouseY), realMousePos) }
+                    clickBoxMesh.first.interact = 1
+                }
+                if (clickBoxMesh.second.hold) {
+                    clickBoxMesh.second.whileClickEvent?.let { it(Vector2f(mouseX, mouseY), realMousePos) }
+                    clickBoxMesh.first.interact = 2
+                }
+            } else if (clickBoxMesh.first.interact != 0) {
+                clickBoxMesh.second.hold = false
+                clickBoxMesh.second.onLeaveEvent?.let { it(Vector2f(mouseX, mouseY), realMousePos) }
+                clickBoxMesh.first.interact = 0
             }
-            else clickBoxMesh.value.first.interact = 0
         }
 
         if(showClickBox.get()){
+            val cameras = controller. getComponents<CameraComponent>()
+            val camera=  cameras[cameras.keys.first()]!!
+
             currentShader.use()
             currentShader.enableBlend()
             currentShader.enableDepthTest()
-            currentShader.uploadMat4f("uProjection", cameras[cameraID]!!.projectionMatrix )
-            currentShader.uploadMat4f("uView", cameras[cameraID]!!.viewMatrix)
+            currentShader.uploadMat4f("uProjection", camera.projectionMatrix )
+            currentShader.uploadMat4f("uView",camera.viewMatrix)
             currentShader.uploadMat3f("uTransform", noTransform)
             currentShader.uploadFloat("uDepth", 1f)
             currentShader.uploadInt("uInteract", 0)
 
-            for(clickBoxMesh in flatClickBoxMeshes){
-                if(!clickBoxMesh.value.second.showDebugLines) continue
-                currentShader.uploadVec4f("uColor", Vector4f(1f,1f,clickBoxMesh.value.first.interact.toFloat(),1f))
-                clickBoxMesh.value.second.renderClickBox()
-                val transformedMousePos  = transformPoint(realMousePos, transforms[clickBoxMesh.key])
+            for((entityID, clickBoxMesh) in flatClickBoxMeshes){
+                if(!clickBoxMesh.second.showDebugLines) continue
+                currentShader.uploadVec4f("uColor", Vector4f(1f,1f,clickBoxMesh.first.interact.toFloat(),1f))
+                clickBoxMesh.second.renderClickBox()
+                val transformedMousePos  = transformPoint(realMousePos, transforms[entityID])
                 currentShader.uploadVec4f("uColor", Vector4f(1f,0f,1f,1f))
                 MouseClickBoxVisualizer.renderMouse(transformedMousePos.x, transformedMousePos.y)
             }
@@ -84,13 +111,42 @@ object MeshInteractSystem : IEntityComponentSystem(){
         }
     }
 
+    override fun onMouseClick(xPos: Double, yPos: Double, button: Int) {
+        val transforms = controller.getComponents<TransformComponent>()
+        val flatClickBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, ClickBoxComponent>()
+        val realMousePos = getRealMousePosition(xPos, yPos)
+
+        for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
+            if (clickBoxMesh.second.onClickEvent == null && clickBoxMesh.second.whileClickEvent == null) continue
+            val transformedMousePos = transformPoint(realMousePos, transforms[entityID])
+            if (clickBoxMesh.second.isInside(transformedMousePos)) {
+                clickBoxMesh.second.onClickEvent?.let { it(Vector2f(xPos.toFloat(), yPos.toFloat()), realMousePos, button) }
+                clickBoxMesh.second.hold = true
+            }
+        }
+    }
+
+    override fun onMouseRelease(xPos: Double, yPos: Double, button: Int) {
+        val transforms = controller.getComponents<TransformComponent>()
+        val flatClickBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, ClickBoxComponent>()
+        val realMousePos = getRealMousePosition(xPos, yPos)
+
+        for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
+            if (clickBoxMesh.second.onReleaseEvent == null && clickBoxMesh.second.whileClickEvent == null) continue
+            val transformedMousePos = transformPoint(realMousePos, transforms[entityID])
+            if (clickBoxMesh.second.isInside(transformedMousePos)) {
+                clickBoxMesh.second.onReleaseEvent?.let { it(Vector2f(xPos.toFloat(), yPos.toFloat()), realMousePos, button) }
+                clickBoxMesh.second.hold = false
+            }
+        }
+    }
+
+    private fun getRealMousePosition(xPos: Double, yPos: Double): Vector2f {
+        val mouseX = xPos.toFloat()
+        val mouseY = yPos.toFloat()
+        val cameras = controller.getComponents<CameraComponent>()
+        val cameraID = cameras.keys.first()
+        return Vector2f(((mouseX / Window.getWidth()) * 2f - 1f) * cameras[cameraID]!!.aspect, -(mouseY / Window.getHeight()) * 2f + 1f)
+    }
+
 }
-
-
-
-//TODO:
-// probably needs a hitbox of some sorts, instead of checking every triangle of the mesh, we could create square and circle hitboxes and check for them (so instead of 200 tryiangles in a curve, we can als just do 5 boxes that line up somewhat)
-// also, the OpenMesh should be treaded as a FlatMesh with more colors, so not a mesh that can have multiple meshes inside
-//   i mean, it can, but those will be treaded as still 1 object for hovering and other, i cant be bothered to make it work, 30fps is also fun >:(
-//   but jokes aside, i dont think it is going to be a big deal to have a lot of meshes drawn, they are all static objects that get moved only when the user interacts + no detailed shadering and stuff, only colors, what can go wrong
-//   otherwise i need to introduce some kind of batching system, but thats for future me when i know more about the game (so i know what i can put together easaly in 1 batch or not)

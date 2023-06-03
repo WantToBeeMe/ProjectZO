@@ -1,4 +1,4 @@
-package ecs.components
+package ecs.components.mesh
 
 import org.joml.Vector4f
 import org.lwjgl.opengl.GL45.*
