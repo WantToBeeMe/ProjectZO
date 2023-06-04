@@ -1,5 +1,6 @@
 package ecs.components.mesh
 
+import ecs.components.mesh.customTemplates.FlatMesh
 import org.joml.Vector4f
 import org.lwjgl.opengl.GL45.*
 
@@ -17,6 +18,21 @@ class OpenMeshComponent {
     private var vboID : Int = 0
     private var eboID : Int = 0
     private var created = false
+
+    fun addMesh(mesh: FlatMesh, height: Float = 0f) {
+        val addition = vertices.size / vertexSize
+        val newTriangles = mesh.triangles.mapIndexed { index, num ->
+            num+addition
+        }.toIntArray()
+        triangles += newTriangles
+        triangleIndex += newTriangles.size/3
+
+        val flatVertexSize = 2
+        val totalVertices = (mesh.vertices.size / flatVertexSize)
+        for (i in 0 until (mesh.vertices.size / flatVertexSize)) {
+            addVertex(mesh.vertices[i*flatVertexSize + 0], mesh.vertices[i*flatVertexSize + 1], mesh.color, height)
+        }
+    }
 
     fun addQuad(startX:Float,startY:Float,endX:Float,endY:Float, color:Vector4f, height: Float = 0f) {
         val v1 = addVertex(endX, startY, color, height)

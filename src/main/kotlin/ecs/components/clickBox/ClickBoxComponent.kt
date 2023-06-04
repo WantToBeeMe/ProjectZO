@@ -85,12 +85,11 @@ class ClickBoxComponent {
         created = true
 
         for(box in clickBoxes){
-            val a = box.getBoxOutline()
-            a.second.forEach { num -> num+(vertices.size/2) }
-            val newLines = a.second.mapIndexed { index, num ->
+            val boxOutline = box.getBoxOutline()
+            val newLines = boxOutline.second.mapIndexed { index, num ->
                 num + (vertices.size / 2)
             }.toIntArray()
-            vertices += a.first
+            vertices += boxOutline.first
             lines += newLines
         }
 

@@ -1,6 +1,6 @@
 package ecs.components.mesh
 
-import org.joml.Vector4f
+import ecs.components.mesh.customTemplates.FlatMesh
 import org.lwjgl.opengl.GL45.*
 
 class FlatMeshComponent : FlatMesh() {

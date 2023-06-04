@@ -37,10 +37,10 @@ class ECSController : IImGuiWindow {
     //assign an item with component T
     //for example Transform, then it gets assigned, and you might want to edit the return if you want specific init values
     //if you add something that isn't a component, then it will just crash, so we intentionally didn't make this save in that way, that may leave errors under the radar for to long
-    inline fun <reified T> assign(id: Int): T {
+    inline fun <reified T> assign(id: Int, init:T? = null): T {
         val componentType = componentsTypes[T::class]
         val componentMap = componentType as MutableMap<Int, T> //IDK why its complain that it should be <*, *> but it has to be this sho it needs to shush
-        val instance = T::class.java.getDeclaredConstructor().newInstance()
+        val instance = init ?: T::class.java.getDeclaredConstructor().newInstance() //set to init, or otherwise the default value
         componentMap[id] = instance
         return instance
     }

@@ -98,7 +98,7 @@ object Window {
         Game.init()
         Mouse.setWindow(glfwWindow!!)
         while (!glfwWindowShouldClose(glfwWindow!!)){
-            glClearColor(30/225f, 31/255f, 34/255f, 1f)
+            glClearColor(Colors.GRAY_SUPER_DARK.get.x, Colors.GRAY_SUPER_DARK.get.y, Colors.GRAY_SUPER_DARK.get.z, Colors.GRAY_SUPER_DARK.get.w)
             glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
             Game.loop(dt)

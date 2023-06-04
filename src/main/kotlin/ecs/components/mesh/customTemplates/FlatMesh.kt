@@ -1,4 +1,4 @@
-package ecs.components.mesh
+package ecs.components.mesh.customTemplates
 
 import org.joml.Vector2f
 import org.joml.Vector4f
@@ -25,10 +25,13 @@ open class FlatMesh {
 
     fun addMesh(mesh : FlatMesh){
         val addition = (vertices.size/vertexSize)
-        mesh.triangles.forEach { num -> num+addition }
+        val newTriangles = mesh.triangles.mapIndexed { index, num ->
+            num+addition
+        }.toIntArray()
         vertices += mesh.vertices
-        triangles += mesh.triangles
+        triangles += newTriangles
     }
+
     fun addQuad(leftTop : Vector2f, rightBot: Vector2f){
         return addQuad(leftTop.x, leftTop.y, rightBot.x, rightBot.y)
     }
@@ -49,17 +52,19 @@ open class FlatMesh {
         vertices[oldVertexSize + 1] = y
         return (oldVertexSize/2)
     }
-    fun setColor(r:Float, g:Float, b:Float, a:Float){
+    fun setColor(r:Float, g:Float, b:Float, a:Float) : FlatMesh {
         color.x = r
         color.y = g;
         color.z = b;
         color.w = a;
+        return this;
     }
-    fun setColor(c: Vector4f){
+    fun setColor(c: Vector4f): FlatMesh {
         color.x = c.x
         color.y = c.y
         color.z = c.z
         color.w = c.w
+        return this
     }
 
     fun addTriangle(first: Int, second:Int, third: Int){
