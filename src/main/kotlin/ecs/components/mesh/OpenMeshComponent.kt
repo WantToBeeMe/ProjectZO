@@ -1,6 +1,5 @@
 package ecs.components.mesh
 
-import ecs.components.mesh.customTemplates.FlatMesh
 import org.joml.Vector4f
 import org.lwjgl.opengl.GL45.*
 
@@ -11,8 +10,6 @@ class OpenMeshComponent {
 
     var vertices : FloatArray = FloatArray(0)
     var triangles : IntArray = IntArray(0)
-    private var triangleIndex = 0
-    private var vertexIndex = 0
 
     private var vaoID : Int = 0
     private var vboID : Int = 0
@@ -25,7 +22,6 @@ class OpenMeshComponent {
             num+addition
         }.toIntArray()
         triangles += newTriangles
-        triangleIndex += newTriangles.size/3
 
         val flatVertexSize = 2
         val totalVertices = (mesh.vertices.size / flatVertexSize)
@@ -43,33 +39,33 @@ class OpenMeshComponent {
         addTriangle(v1,v4,v2)
     }
     fun addVertex(x:Float, y:Float,r:Float,g:Float,b:Float,a:Float , height: Float = 0f) : Int{
-        val realIndex = (vertexIndex*vertexSize)
-        val newArr = FloatArray(vertices.size + vertexSize)
+        val oldSize = vertices.size
+        val newArr = FloatArray(oldSize + vertexSize)
         vertices.copyInto(newArr)
         vertices = newArr
-        vertices[realIndex + 0] = x
-        vertices[realIndex + 1] = y
-        vertices[realIndex + 2] = height/10000000f
+        vertices[oldSize + 0] = x
+        vertices[oldSize + 1] = y
+        vertices[oldSize + 2] = height/10000000f
 
-        vertices[realIndex + 0 + posSize] = r
-        vertices[realIndex + 1 + posSize] = g
-        vertices[realIndex + 2 + posSize] = b
-        vertices[realIndex + 3 + posSize] = a
+        vertices[oldSize + 0 + posSize] = r
+        vertices[oldSize + 1 + posSize] = g
+        vertices[oldSize + 2 + posSize] = b
+        vertices[oldSize + 3 + posSize] = a
 
-        return vertexIndex++
+        return oldSize/vertexSize
     }
     fun addVertex(x:Float,y:Float, color: Vector4f, height: Float = 0f) :Int{
         return addVertex(x,y,color.x,color.y,color.z,color.w, height)
     }
 
-    fun addTriangle(first: Int, second:Int, third: Int) : Int{
-        val newArr = IntArray(triangles.size + 3)
+    fun addTriangle(first: Int, second:Int, third: Int){
+        val oldSize = triangles.size
+        val newArr = IntArray(oldSize + 3)
         triangles.copyInto(newArr)
         triangles = newArr
-        triangles[triangleIndex*3 + 0] = first
-        triangles[triangleIndex*3 + 1] = second
-        triangles[triangleIndex*3 + 2] = third
-        return triangleIndex++
+        triangles[oldSize + 0] = first
+        triangles[oldSize + 1] = second
+        triangles[oldSize + 2] = third
     }
 
     fun create(){
@@ -127,8 +123,6 @@ class OpenMeshComponent {
         if(!created) return
         vertices = FloatArray(0)
         triangles  = IntArray(0)
-        triangleIndex = 0
-        vertexIndex = 0
         glDeleteVertexArrays(vaoID)
         glDeleteBuffers(vboID)
         glDeleteBuffers(eboID)

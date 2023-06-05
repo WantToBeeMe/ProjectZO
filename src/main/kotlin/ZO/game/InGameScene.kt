@@ -1,14 +1,8 @@
 package ZO.game
 
 import ZO.custonEntities.GridMesh
-import ecs.components.mesh.FlatCircleMesh
-import base.util.Colors
 import base.util.IScene
 import ecs.components.CameraComponent
-import ecs.components.TransformComponent
-import ecs.components.mesh.FlatMeshComponent
-import ecs.components.mesh.OpenMeshComponent
-import org.joml.Vector2f
 
 
 class InGameScene : IScene() {
@@ -18,7 +12,12 @@ class InGameScene : IScene() {
         val camID = controller.createEntity()
         controller.assign<CameraComponent>(camID)
 
-        GridMesh(controller, 11,6,0.8f)
+        GridMesh(controller, arrayOf(
+            booleanArrayOf(true,true,true,true,true,true),
+            booleanArrayOf(true,true,true,false,true,true),
+            booleanArrayOf(true,false,true,false,false,true),
+            booleanArrayOf(true,true,true,true,true,true),
+        ),0.8f)
     }
 
 }

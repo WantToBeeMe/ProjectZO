@@ -1,6 +1,6 @@
-package ecs.components.mesh
+package ecs.components.mesh.customTemplates
 
-import ecs.components.mesh.customTemplates.FlatMesh
+import ecs.components.mesh.FlatMesh
 import org.joml.Vector2f
 import kotlin.math.cos
 import kotlin.math.sin

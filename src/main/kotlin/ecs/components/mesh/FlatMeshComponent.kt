@@ -1,6 +1,5 @@
 package ecs.components.mesh
 
-import ecs.components.mesh.customTemplates.FlatMesh
 import org.lwjgl.opengl.GL45.*
 
 class FlatMeshComponent : FlatMesh() {

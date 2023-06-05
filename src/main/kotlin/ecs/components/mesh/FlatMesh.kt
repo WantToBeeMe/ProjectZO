@@ -1,4 +1,4 @@
-package ecs.components.mesh.customTemplates
+package ecs.components.mesh
 
 import org.joml.Vector2f
 import org.joml.Vector4f
