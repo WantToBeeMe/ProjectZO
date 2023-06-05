@@ -8,6 +8,17 @@ import kotlin.math.sin
 class FlatCurvedBoxMesh(leftTop: Vector2f,rightBot: Vector2f,  cornerRadius: Float, resolution: Int = 4): FlatMesh() {
 
     init {
+        var cornerRadius = cornerRadius
+        if(rightBot.x - leftTop.x -cornerRadius*2 < 0)
+            cornerRadius +=( rightBot.x - leftTop.x -cornerRadius*2)/2
+        if(leftTop.y - rightBot.y -cornerRadius*2 < 0)
+            cornerRadius +=( leftTop.y - rightBot.y -cornerRadius*2)/2
+
+        if(rightBot.x - leftTop.x -cornerRadius*2 > 0)
+            addQuad(Vector2f(leftTop.x + cornerRadius, leftTop.y) , Vector2f(rightBot.x - cornerRadius, rightBot.y ))
+        if(leftTop.y - rightBot.y -cornerRadius*2 > 0)
+            addQuad(Vector2f(leftTop.x, leftTop.y - cornerRadius) , Vector2f(rightBot.x, rightBot.y + cornerRadius ))
+
         val innerLeftTop = Vector2f(leftTop.x + cornerRadius, leftTop.y - cornerRadius)
         val innerRightTop =  Vector2f(rightBot.x - cornerRadius, leftTop.y - cornerRadius)
         val innerRightBot = Vector2f(rightBot.x - cornerRadius, rightBot.y + cornerRadius)
@@ -18,10 +29,6 @@ class FlatCurvedBoxMesh(leftTop: Vector2f,rightBot: Vector2f,  cornerRadius: Flo
         addMesh( FlatOuterCurveMesh( innerRightBot, 90f, 180f, cornerRadius, resolution) )
         addMesh( FlatOuterCurveMesh( innerLeftBot, 180f, 270f, cornerRadius, resolution) )
 
-        if(innerRightBot.x - innerLeftTop.x > 0)
-            addQuad(Vector2f(innerLeftTop.x, leftTop.y) , Vector2f(innerRightBot.x, rightBot.y ))
 
-        if(innerLeftTop.y - innerRightBot.y  > 0)
-            addQuad(Vector2f(leftTop.x, innerLeftTop.y) , Vector2f(rightBot.x, innerRightBot.y ))
     }
 }

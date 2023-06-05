@@ -12,12 +12,13 @@ class InGameScene : IScene() {
         val camID = controller.createEntity()
         controller.assign<CameraComponent>(camID)
 
-        GridMesh(controller, arrayOf(
-            booleanArrayOf(true,true,true,true,true,true),
-            booleanArrayOf(true,true,true,false,true,true),
-            booleanArrayOf(true,false,true,false,false,true),
-            booleanArrayOf(true,true,true,true,true,true),
-        ),0.8f)
+
+       GridMesh(controller, arrayOf(
+           booleanArrayOf(false,true,true,true,true,true,true),
+           booleanArrayOf(true,true,true,true,false,true,false),
+           booleanArrayOf(true,true,false,true,false,false,true),
+           booleanArrayOf(true,true,true,true,true,false,true),
+       ),0.8f)
     }
 
 }
