@@ -5,18 +5,13 @@ import org.joml.Vector2f
 import kotlin.math.cos
 import kotlin.math.sin
 
-class FlatInnerCurveMesh(rotateAround: Vector2f, degreesAngleStart: Float, degreesAngleEnd: Float, radius: Float, resolution: Int = 5) : FlatMesh() {
+class FlatCustomCurveMesh(rotateAround: Vector2f,connectPoint: Vector2f, degreesAngleStart: Float, degreesAngleEnd: Float, radius: Float, resolution: Int = 5) : FlatMesh() {
     init {
         val centerX = rotateAround.x
         val centerY = rotateAround.y
         val resolution = if(resolution > 0) resolution else 1
-        val diff = (degreesAngleEnd - degreesAngleStart + 180) % 360f
-        val middle = (degreesAngleStart + diff / 2 + 360) % 360f
-        val middleRad=  Math.toRadians(middle.toDouble())
-        //this is obviously not correct, but oh well, who caress
-        val amountX = -cos(middleRad).toFloat()*1.4f
-        val amountY = sin(middleRad).toFloat()* 1.4f
-        val cornerVertex = addVertex(centerX + radius * amountX, centerY+ radius*amountY)
+
+        val cornerVertex = addVertex(connectPoint.x, connectPoint.y)
 
 
         var totalRotationAngle = (degreesAngleEnd - degreesAngleStart) % 360f
