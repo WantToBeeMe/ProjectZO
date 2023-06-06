@@ -4,7 +4,6 @@ import base.util.Colors
 import base.util.IImGuiWindow
 import base.util.ImGuiController
 import ecs.ECSController
-import ecs.components.mesh.customTemplates.FlatCircleMesh
 import ecs.components.mesh.OpenMeshComponent
 import ecs.components.mesh.customTemplates.FlatCurvedBoxMesh
 import ecs.components.mesh.customTemplates.FlatCustomCurveMesh
@@ -13,7 +12,7 @@ import imgui.ImGui
 import imgui.enums.ImGuiCond
 import org.joml.Vector2f
 
-class GridMesh(private val controller: ECSController,private val grid: Array<BooleanArray>,private val screenHeight: Float): IImGuiWindow {
+class GridMesh(controller: ECSController,private val grid: Array<BooleanArray>,private val screenHeight: Float): IImGuiWindow {
     constructor(controller: ECSController, width: Int, height: Int, screenHeight: Float) :
             this(controller, Array(height) { BooleanArray(width) { true } }, screenHeight)
 
@@ -32,11 +31,13 @@ class GridMesh(private val controller: ECSController,private val grid: Array<Boo
 
     private fun genStuff(){
         val height = 1f
+        val blockEdge = 0.05f
 
         val tempPerBlock = screenHeight*2/grid.size
         val borderEdgeWidth = tempPerBlock*edgeWidthPercentage
         val borderSpacing = tempPerBlock*edgeSpacing
         val perBlock = tempPerBlock - (borderEdgeWidth*2/grid.size)
+        val perBlockEdge = perBlock*blockEdge
 
         val mostRight = perBlock*grid[0].size/2
         val mostTop = screenHeight-borderEdgeWidth
@@ -45,33 +46,35 @@ class GridMesh(private val controller: ECSController,private val grid: Array<Boo
 
         //sides
         backgroundMesh.addQuad(-mostRight-nonRadBorder, mostTop+borderEdgeWidth,
-            mostRight+nonRadBorder,mostTop+borderSpacing, Colors.GRAY_DARK.get,height)
+            mostRight+nonRadBorder,mostTop+borderSpacing, Colors.GRAY_NORMAL.get,height)
         backgroundMesh.addQuad(-mostRight-nonRadBorder, -mostTop-borderEdgeWidth,
-            mostRight+nonRadBorder,-mostTop-borderSpacing, Colors.GRAY_DARK.get,height)
+            mostRight+nonRadBorder,-mostTop-borderSpacing, Colors.GRAY_NORMAL.get,height)
         backgroundMesh.addQuad(-mostRight-borderSpacing, mostTop+nonRadBorder,
-            -mostRight-borderEdgeWidth, -mostTop-nonRadBorder, Colors.GRAY_DARK.get,height)
+            -mostRight-borderEdgeWidth, -mostTop-nonRadBorder, Colors.GRAY_NORMAL.get,height)
         backgroundMesh.addQuad(mostRight+borderSpacing, mostTop+nonRadBorder,
-            mostRight+borderEdgeWidth, -mostTop-nonRadBorder, Colors.GRAY_DARK.get,height)
+            mostRight+borderEdgeWidth, -mostTop-nonRadBorder, Colors.GRAY_NORMAL.get,height)
 
         //outerCorners
+        val outerRes= 5
         backgroundMesh.addMesh( FlatOuterCurveMesh( Vector2f(-mostRight-nonRadBorder,mostTop+nonRadBorder),
-            -90f , 0f, cornerRadius ).setColor(Colors.GRAY_DARK.get),height)
+            -90f , 0f, cornerRadius,outerRes ).setColor(Colors.GRAY_NORMAL.get),height)
         backgroundMesh.addMesh( FlatOuterCurveMesh( Vector2f(mostRight+nonRadBorder,mostTop+nonRadBorder),
-            0f , 90f, cornerRadius ).setColor(Colors.GRAY_DARK.get),height)
+            0f , 90f, cornerRadius,outerRes).setColor(Colors.GRAY_NORMAL.get),height)
         backgroundMesh.addMesh( FlatOuterCurveMesh( Vector2f(mostRight+nonRadBorder,-mostTop-nonRadBorder),
-            90f , 180f, cornerRadius ).setColor(Colors.GRAY_DARK.get),height)
+            90f , 180f, cornerRadius,outerRes ).setColor(Colors.GRAY_NORMAL.get),height)
         backgroundMesh.addMesh( FlatOuterCurveMesh( Vector2f(-mostRight-nonRadBorder,-mostTop-nonRadBorder),
-            180f , 270f, cornerRadius ).setColor(Colors.GRAY_DARK.get),height)
+            180f , 270f, cornerRadius,outerRes ).setColor(Colors.GRAY_NORMAL.get),height)
 
         //innerCorners
+        val innerRes= 3
         backgroundMesh.addMesh( FlatCustomCurveMesh( Vector2f(-mostRight+cornerRadius -borderSpacing,mostTop-cornerRadius+borderSpacing),Vector2f(-mostRight-borderSpacing,mostTop+borderSpacing),
-            -90f , 0f, cornerRadius ).setColor(Colors.GRAY_DARK.get),height)
+            -90f , 0f, cornerRadius ,innerRes).setColor(Colors.GRAY_NORMAL.get),height)
         backgroundMesh.addMesh( FlatCustomCurveMesh( Vector2f(mostRight-cornerRadius+borderSpacing,mostTop-cornerRadius+borderSpacing),Vector2f(mostRight+borderSpacing,mostTop+borderSpacing),
-            0f , 90f, cornerRadius ).setColor(Colors.GRAY_DARK.get),height)
+            0f , 90f, cornerRadius ,innerRes ).setColor(Colors.GRAY_NORMAL.get),height)
         backgroundMesh.addMesh( FlatCustomCurveMesh( Vector2f(mostRight-cornerRadius +borderSpacing,-mostTop+cornerRadius-borderSpacing),Vector2f(mostRight+borderSpacing,-mostTop-borderSpacing),
-            90f , 180f, cornerRadius ).setColor(Colors.GRAY_DARK.get),height)
+            90f , 180f, cornerRadius ,innerRes ).setColor(Colors.GRAY_NORMAL.get),height)
         backgroundMesh.addMesh( FlatCustomCurveMesh( Vector2f(-mostRight+cornerRadius -borderSpacing,-mostTop+cornerRadius-borderSpacing),Vector2f(-mostRight-borderSpacing,-mostTop-borderSpacing),
-            180f , 270f, cornerRadius ).setColor(Colors.GRAY_DARK.get),height)
+            180f , 270f, cornerRadius ,innerRes ).setColor(Colors.GRAY_NORMAL.get),height)
 
 
 
@@ -80,8 +83,9 @@ class GridMesh(private val controller: ECSController,private val grid: Array<Boo
             for(j in 0 until grid[0].size){
                 if(grid[i][j]){
                     backgroundMesh.addMesh(
-                        FlatCircleMesh(Vector2f(-mostRight + perBlock*j + perBlock/2, mostTop -perBlock*i -perBlock/2   ), perBlock/10f )
-                            .setColor(Colors.GRAY_DARK.get),height)
+                        FlatCurvedBoxMesh(Vector2f(-mostRight+perBlock*j + perBlockEdge, mostTop-perBlock*i - perBlockEdge) ,
+                            Vector2f(-mostRight+ perBlock*j+perBlock -perBlockEdge ,mostTop -perBlock*(i+1) + perBlockEdge),
+                            cornerRadius, 3).setColor(Colors.GRAY_DARK.get),height)
                 }
                 else{
                     val top = if(i <= 0) Triple((false),(false),(false)) else Triple(
@@ -98,17 +102,77 @@ class GridMesh(private val controller: ECSController,private val grid: Array<Boo
                         grid[i+1][j] ,
                         (if (j >= grid[i+1].size-1) false else grid[i+1][j+1])
                     )
-
-                    backgroundMesh.addMesh(
-                        FlatCurvedBoxMesh(Vector2f(-mostRight  + perBlock*j, mostTop -perBlock*i) ,
-                            Vector2f(-mostRight + perBlock*j +perBlock ,mostTop -perBlock*(i+1) ),
-                            cornerRadius, 3).setColor(Colors.GRAY_DARK.get),height)
+                    addWall( Vector2f(-mostRight  + perBlock*(j+0.5f) , mostTop -perBlock*(i+0.5f)),perBlock,cornerRadius, borderSpacing, top, side, bot )
                 }
             }
         }
         backgroundMesh.create()
         backgroundMesh.depth = -1f
     }
+
+    private fun addWall(center: Vector2f, blockSize: Float, cornerRadius : Float, borderSpacing : Float,
+                        top : Triple<Boolean, Boolean,Boolean>, side: Pair<Boolean, Boolean>, bot : Triple<Boolean, Boolean,Boolean>){
+        val outerLeftTop = Vector2f(center.x - blockSize/2 + borderSpacing , center.y + blockSize/2 - borderSpacing )
+        val outerRightBot = Vector2f(center.x + blockSize/2 - borderSpacing , center.y - blockSize/2 + borderSpacing )
+        val innerLeftTop = Vector2f(outerLeftTop.x + cornerRadius, outerLeftTop.y - cornerRadius)
+        val innerRightBot = Vector2f(outerRightBot.x - cornerRadius, outerRightBot.y + cornerRadius)
+
+        backgroundMesh.addQuad(innerLeftTop.x, outerLeftTop.y, innerRightBot.x, outerRightBot.y, Colors.GRAY_NORMAL.get)
+        backgroundMesh.addQuad(outerLeftTop.x, innerLeftTop.y, outerRightBot.x, innerRightBot.y, Colors.GRAY_NORMAL.get)
+
+        if(!top.second)
+            backgroundMesh.addQuad(
+                outerLeftTop.x, center.y + blockSize/2 + borderSpacing,
+                outerRightBot.x,  innerLeftTop.y, Colors.GRAY_NORMAL.get)
+        if(!bot.second)
+            backgroundMesh.addQuad(
+                outerLeftTop.x, innerRightBot.y,
+                outerRightBot.x, center.y - blockSize/2 - borderSpacing, Colors.GRAY_NORMAL.get)
+        if(!side.first)
+            backgroundMesh.addQuad(
+                center.x - blockSize/2 - borderSpacing , outerLeftTop.y,
+                innerLeftTop.x,  outerRightBot.y, Colors.GRAY_NORMAL.get)
+        if(!side.second)
+            backgroundMesh.addQuad(
+                innerRightBot.x , outerLeftTop.y,
+                center.x + blockSize/2 + borderSpacing,  outerRightBot.y, Colors.GRAY_NORMAL.get)
+
+        if(side.first && top.second)
+            backgroundMesh.addMesh( FlatOuterCurveMesh( innerLeftTop,
+                -90f , 0f, cornerRadius ,3 ).setColor(Colors.GRAY_NORMAL.get))
+        if(top.second && side.second)
+            backgroundMesh.addMesh( FlatOuterCurveMesh( Vector2f(innerRightBot.x, innerLeftTop.y),
+                0f , 90f, cornerRadius ,3 ).setColor(Colors.GRAY_NORMAL.get))
+        if(side.second && bot.second)
+            backgroundMesh.addMesh( FlatOuterCurveMesh( innerRightBot,
+                90f , 180f, cornerRadius ,3 ).setColor(Colors.GRAY_NORMAL.get))
+        if(bot.second && side.first)
+            backgroundMesh.addMesh( FlatOuterCurveMesh( Vector2f(innerLeftTop.x, innerRightBot.y),
+                180f , 270f, cornerRadius ,3 ).setColor(Colors.GRAY_NORMAL.get))
+
+        if(!side.first && !top.second){
+            if(!top.first){
+                
+            }
+
+
+        }
+
+        if(!top.second && !side.second){
+        }
+
+        if(!side.second && !bot.second) {
+        }
+
+        if(!bot.second && !side.first){
+        }
+
+
+    }
+
+
+
+
 
     override fun showUi() {
         ImGui.setNextWindowSize(250f, 140f, ImGuiCond.Once)
@@ -149,5 +213,4 @@ class GridMesh(private val controller: ECSController,private val grid: Array<Boo
 
         ImGui.end()
     }
-
 }
