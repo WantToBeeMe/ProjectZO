@@ -13,12 +13,16 @@ class InGameScene : IScene() {
         controller.assign<CameraComponent>(camID)
 
 
-       GridMesh(controller, arrayOf(
-           booleanArrayOf(false,true,true,true,true,true,true),
-           booleanArrayOf(true,true,true,true,false,true,false),
-           booleanArrayOf(true,true,false,true,false,false,true),
-           booleanArrayOf(true,true,true,true,true,false,true),
-       ),0.8f)
+       GridMesh(controller,
+              //arrayOf(
+              //booleanArrayOf(true,true,false,true,true,true,true,true,false),
+              //booleanArrayOf(true,true,true,true,false,true,false,true,false),
+              //booleanArrayOf(true,true,false,false,false,true,false,false,true),
+              //booleanArrayOf(true,true,true,true,true,true,true,false,true),
+              //booleanArrayOf(true,true,true,true,true,true,true,false,true),
+              //booleanArrayOf(false,true,false,false,true,true,true,false,false),)
+               10,6
+       ,0.9f)
     }
 
 }

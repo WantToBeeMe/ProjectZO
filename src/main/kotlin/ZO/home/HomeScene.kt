@@ -28,7 +28,6 @@ class HomeScene : IScene() {
         val mesh = controller.assign<FlatMeshComponent>(buttonID)
         val b = Pair(Vector2f(-width/2,height/2),Vector2f(width/2,-height/2))
         mesh.addQuad(b.first,b.second)
-        mesh.setColor(Colors.GRAY_NORMAL.get)
         mesh.setColor(Colors.GRAY_LIGHT.get)
         mesh.create()
         controller.assign<ClickBoxComponent>(buttonID)

@@ -19,9 +19,9 @@ class GridMesh(controller: ECSController,private val grid: Array<BooleanArray>,p
     private val backgroundID = controller.createEntity()
     private val backgroundMesh = controller.assign<OpenMeshComponent>(backgroundID)
 
-    private var edgeSpacing = 0.1f
+    private var edgeSpacing = 0.08f
     private var edgeWidthPercentage = 0.3f
-    private var cornerPercentage = 0.4f
+    private var cornerPercentage = 0.48f
 
 
     init {
@@ -137,35 +137,65 @@ class GridMesh(controller: ECSController,private val grid: Array<BooleanArray>,p
                 innerRightBot.x , outerLeftTop.y,
                 center.x + blockSize/2 + borderSpacing,  outerRightBot.y, Colors.GRAY_NORMAL.get)
 
+        val outerRes = 3
         if(side.first && top.second)
             backgroundMesh.addMesh( FlatOuterCurveMesh( innerLeftTop,
-                -90f , 0f, cornerRadius ,3 ).setColor(Colors.GRAY_NORMAL.get))
+                -90f , 0f, cornerRadius ,outerRes ).setColor(Colors.GRAY_NORMAL.get))
         if(top.second && side.second)
             backgroundMesh.addMesh( FlatOuterCurveMesh( Vector2f(innerRightBot.x, innerLeftTop.y),
-                0f , 90f, cornerRadius ,3 ).setColor(Colors.GRAY_NORMAL.get))
+                0f , 90f, cornerRadius ,outerRes ).setColor(Colors.GRAY_NORMAL.get))
         if(side.second && bot.second)
             backgroundMesh.addMesh( FlatOuterCurveMesh( innerRightBot,
-                90f , 180f, cornerRadius ,3 ).setColor(Colors.GRAY_NORMAL.get))
+                90f , 180f, cornerRadius ,outerRes ).setColor(Colors.GRAY_NORMAL.get))
         if(bot.second && side.first)
             backgroundMesh.addMesh( FlatOuterCurveMesh( Vector2f(innerLeftTop.x, innerRightBot.y),
-                180f , 270f, cornerRadius ,3 ).setColor(Colors.GRAY_NORMAL.get))
+                180f , 270f, cornerRadius ,outerRes ).setColor(Colors.GRAY_NORMAL.get))
 
+        val innerRes = 3
         if(!side.first && !top.second){
-            if(!top.first){
-                
-            }
-
-
+            if(!top.first)
+                backgroundMesh.addQuad(
+                        outerLeftTop.x, outerLeftTop.y,
+                        center.x - blockSize/2 - borderSpacing, center.y + blockSize/2 + borderSpacing , Colors.GRAY_NORMAL.get)
+            else
+                backgroundMesh.addMesh(
+                        FlatCustomCurveMesh(Vector2f(outerLeftTop).add(-cornerRadius, cornerRadius), outerLeftTop,
+                                90f, 180f ,cornerRadius, innerRes ).setColor(Colors.GRAY_NORMAL.get))
         }
 
         if(!top.second && !side.second){
+            if(!top.third)
+                backgroundMesh.addQuad(
+                        outerRightBot.x, outerLeftTop.y,
+                        center.x + blockSize/2 + borderSpacing, center.y + blockSize/2 + borderSpacing , Colors.GRAY_NORMAL.get)
+            else
+                backgroundMesh.addMesh(
+                        FlatCustomCurveMesh(Vector2f(outerRightBot.x+cornerRadius,outerLeftTop.y+cornerRadius), Vector2f(outerRightBot.x,outerLeftTop.y),
+                                180f, 270f ,cornerRadius, innerRes ).setColor(Colors.GRAY_NORMAL.get))
         }
 
         if(!side.second && !bot.second) {
+            if(!bot.third)
+                backgroundMesh.addQuad(
+                        outerRightBot.x, outerRightBot.y,
+                        center.x + blockSize/2 + borderSpacing, center.y - blockSize/2 - borderSpacing , Colors.GRAY_NORMAL.get)
+            else
+                backgroundMesh.addMesh(
+                        FlatCustomCurveMesh(Vector2f(outerRightBot).add(cornerRadius, -cornerRadius), outerRightBot,
+                                270f, 0f ,cornerRadius, innerRes ).setColor(Colors.GRAY_NORMAL.get))
         }
 
         if(!bot.second && !side.first){
+            if(!bot.first)
+                backgroundMesh.addQuad(
+                        outerLeftTop.x, outerRightBot.y,
+                        center.x - blockSize/2 - borderSpacing, center.y - blockSize/2 - borderSpacing , Colors.GRAY_NORMAL.get)
+            else
+                backgroundMesh.addMesh(
+                        FlatCustomCurveMesh(Vector2f(outerLeftTop.x-cornerRadius,outerRightBot.y-cornerRadius), Vector2f(outerLeftTop.x,outerRightBot.y),
+                                0f, 90f ,cornerRadius, innerRes ).setColor(Colors.GRAY_NORMAL.get))
         }
+
 
 
     }
