@@ -7,6 +7,7 @@ import ecs.components.clickBox.ClickBoxComponent
 import ecs.components.mesh.FlatMeshComponent
 import ecs.components.mesh.OpenMeshComponent
 import ecs.systems.IEntityComponentSystem
+import ecs.systems.MeshGridSystem
 import ecs.systems.MeshInteractSystem
 import ecs.systems.MeshRenderSystem
 import imgui.ImGui
@@ -17,16 +18,17 @@ import kotlin.reflect.KClass
 class ECSController : IImGuiWindow {
 
     val componentsTypes: Map< KClass<*>, MutableMap<Int, *>> = mapOf(
-            TransformComponent::class      to  mutableMapOf<Int, TransformComponent>(),
-            FlatMeshComponent::class       to  mutableMapOf<Int, FlatMeshComponent>(),
-            OpenMeshComponent::class       to  mutableMapOf<Int, FlatMeshComponent>(),
-            CameraComponent::class         to  mutableMapOf<Int, CameraComponent>(),
-            ClickBoxComponent::class         to  mutableMapOf<Int, ClickBoxComponent>(),
+            TransformComponent::class   to  mutableMapOf<Int, TransformComponent>(),
+            FlatMeshComponent::class    to  mutableMapOf<Int, FlatMeshComponent>(),
+            OpenMeshComponent::class    to  mutableMapOf<Int, FlatMeshComponent>(),
+            CameraComponent::class      to  mutableMapOf<Int, CameraComponent>(),
+            ClickBoxComponent::class    to  mutableMapOf<Int, ClickBoxComponent>(),
+            GridComponent::class        to  mutableMapOf<Int, GridComponent>(),
             // MovementInputComponent::class  to  mutableMapOf<Int, MovementInputComponent>(),
     )
 
     private val systems : Array<IEntityComponentSystem> = arrayOf(
-        MeshInteractSystem ,MeshRenderSystem
+        MeshInteractSystem ,MeshRenderSystem, MeshGridSystem
     )
 
     private var entityIndex = 0

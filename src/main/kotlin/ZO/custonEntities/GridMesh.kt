@@ -4,6 +4,7 @@ import base.util.Colors
 import base.util.IImGuiWindow
 import base.util.ImGuiController
 import ecs.ECSController
+import ecs.components.GridComponent
 import ecs.components.mesh.OpenMeshComponent
 import ecs.components.mesh.customTemplates.FlatCurvedBoxMesh
 import ecs.components.mesh.customTemplates.FlatCustomCurveMesh
@@ -18,6 +19,7 @@ class GridMesh(controller: ECSController,private val grid: Array<BooleanArray>,p
 
     private val backgroundID = controller.createEntity()
     private val backgroundMesh = controller.assign<OpenMeshComponent>(backgroundID)
+    private val gridComponent = controller.assign<GridComponent>(backgroundID).setScreenHeight(screenHeight).setGrid(grid)
 
     private var edgeSpacing = 0.08f
     private var edgeWidthPercentage = 0.3f
@@ -30,6 +32,8 @@ class GridMesh(controller: ECSController,private val grid: Array<BooleanArray>,p
     }
 
     private fun genStuff(){
+        gridComponent.setEdgeWidthPercentage(edgeWidthPercentage)
+
         val height = 1f
         val blockEdge = 0.05f
 
