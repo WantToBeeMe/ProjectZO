@@ -18,7 +18,7 @@ import org.joml.Vector4f
 import kotlin.math.cos
 import kotlin.math.sin
 
-object MeshInteractSystem : IEntityComponentSystem() , IMouseClickObserver{
+class MeshInteractSystem(private val defaultCam : CameraComponent)  : IEntityComponentSystem() , IMouseClickObserver{
     private val currentShader : ShaderObject = Shader.FLAT_OBJECT.get()
     private val noTransform =  TransformComponent().transform
     private val showClickBox = ImBool(false)
@@ -62,14 +62,12 @@ object MeshInteractSystem : IEntityComponentSystem() , IMouseClickObserver{
         }
 
         if(showClickBox.get()){
-            val cameras = controller. getComponents<CameraComponent>()
-            val camera=  cameras[cameras.keys.first()]!!
 
             currentShader.use()
             currentShader.enableBlend()
             currentShader.enableDepthTest()
-            currentShader.uploadMat4f("uProjection", camera.projectionMatrix )
-            currentShader.uploadMat4f("uView",camera.viewMatrix)
+            currentShader.uploadMat4f("uProjection", defaultCam.projectionMatrix )
+            currentShader.uploadMat4f("uView",defaultCam.viewMatrix)
             currentShader.uploadMat3f("uTransform", noTransform)
             currentShader.uploadFloat("uDepth", 1f)
             currentShader.uploadInt("uInteract", 0)
@@ -144,9 +142,11 @@ object MeshInteractSystem : IEntityComponentSystem() , IMouseClickObserver{
     private fun getRealMousePosition(xPos: Double, yPos: Double): Vector2f {
         val mouseX = xPos.toFloat()
         val mouseY = yPos.toFloat()
-        val cameras = controller.getComponents<CameraComponent>()
-        val cameraID = cameras.keys.first()
-        return Vector2f(((mouseX / Window.getWidth()) * 2f - 1f) * cameras[cameraID]!!.aspect, -(mouseY / Window.getHeight()) * 2f + 1f)
+        return Vector2f(((mouseX / Window.getWidth()) * 2f - 1f) * defaultCam.aspect, -(mouseY / Window.getHeight()) * 2f + 1f)
+    }
+
+    override fun onWindowResize(width: Int, height: Int) {
+        defaultCam.resizeViewPort(width.toFloat(), height.toFloat())
     }
 
 }

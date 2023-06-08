@@ -1,50 +1,41 @@
-package ZO.custonEntities
+package ecs.systems.grid
 
 import base.util.Colors
-import base.util.IImGuiWindow
-import base.util.ImGuiController
 import ecs.ECSController
 import ecs.components.GridComponent
 import ecs.components.mesh.OpenMeshComponent
 import ecs.components.mesh.customTemplates.FlatCurvedBoxMesh
 import ecs.components.mesh.customTemplates.FlatCustomCurveMesh
 import ecs.components.mesh.customTemplates.FlatOuterCurveMesh
-import imgui.ImGui
-import imgui.enums.ImGuiCond
 import org.joml.Vector2f
 
-class GridMesh(controller: ECSController,private val grid: Array<BooleanArray>,private val screenHeight: Float): IImGuiWindow {
-    constructor(controller: ECSController, width: Int, height: Int, screenHeight: Float) :
-            this(controller, Array(height) { BooleanArray(width) { true } }, screenHeight)
+class GridMesh(controller: ECSController, private val component : GridComponent) {
 
     private val backgroundID = controller.createEntity()
     private val backgroundMesh = controller.assign<OpenMeshComponent>(backgroundID)
-    private val gridComponent = controller.assign<GridComponent>(backgroundID).setScreenHeight(screenHeight).setGrid(grid)
 
     private var edgeSpacing = 0.08f
-    private var edgeWidthPercentage = 0.3f
     private var cornerPercentage = 0.48f
 
 
     init {
-        ImGuiController.addGui(this)
-        genStuff()
+        genTheMesh()
     }
 
-    private fun genStuff(){
-        gridComponent.setEdgeWidthPercentage(edgeWidthPercentage)
+    private fun genTheMesh(){
 
         val height = 1f
         val blockEdge = 0.05f
+        val grid = component.grid
 
-        val tempPerBlock = screenHeight*2/grid.size
-        val borderEdgeWidth = tempPerBlock*edgeWidthPercentage
+        val tempPerBlock = component.screenHeight*2/grid.size
+        val borderEdgeWidth = tempPerBlock*component.edgeWidthPercentage
         val borderSpacing = tempPerBlock*edgeSpacing
         val perBlock = tempPerBlock - (borderEdgeWidth*2/grid.size)
         val perBlockEdge = perBlock*blockEdge
 
         val mostRight = perBlock*grid[0].size/2
-        val mostTop = screenHeight-borderEdgeWidth
+        val mostTop = component.screenHeight-borderEdgeWidth
         val cornerRadius = if(borderEdgeWidth*cornerPercentage > borderEdgeWidth-borderSpacing) borderEdgeWidth-borderSpacing else borderEdgeWidth*cornerPercentage
         val nonRadBorder = borderEdgeWidth-cornerRadius
 
@@ -204,28 +195,25 @@ class GridMesh(controller: ECSController,private val grid: Array<BooleanArray>,p
 
     }
 
-
-
-
-
+    /*
     override fun showUi() {
         ImGui.setNextWindowSize(250f, 140f, ImGuiCond.Once)
         ImGui.setNextWindowPos(0f, 0f, ImGuiCond.Once)
         ImGui.begin( "grid mesh thing" )
         var reGenMesh = false
 
-        val edgeValue = floatArrayOf(edgeWidthPercentage)
-        ImGui.sliderFloat("edge width", edgeValue, 0.05f, 0.5f)
-        if(edgeWidthPercentage != edgeValue[0]){
-            edgeWidthPercentage = edgeValue[0]
-            if(edgeSpacing > edgeWidthPercentage -0.05f ){
-                edgeSpacing = edgeWidthPercentage  -0.05f
-            }
-            reGenMesh = true
-        }
+        //val edgeValue = floatArrayOf(component.edgeWidthPercentage)
+        //ImGui.sliderFloat("edge width", edgeValue, 0.05f, 0.5f)
+        //if(component.edgeWidthPercentage != edgeValue[0]){
+        //    component.edgeWidthPercentage = edgeValue[0]
+        //    if(edgeSpacing > component.edgeWidthPercentage -0.05f ){
+        //        edgeSpacing = component.edgeWidthPercentage  -0.05f
+        //    }
+        //    reGenMesh = true
+        //}
 
         val edgeSpacingValue = floatArrayOf(edgeSpacing)
-        ImGui.sliderFloat("edge spacing", edgeSpacingValue, 0f, edgeWidthPercentage - 0.05f)
+        ImGui.sliderFloat("edge spacing", edgeSpacingValue, 0f, component.edgeWidthPercentage - 0.05f)
         if(edgeSpacing != edgeSpacingValue[0]){
             edgeSpacing = edgeSpacingValue[0]
             reGenMesh = true
@@ -247,4 +235,5 @@ class GridMesh(controller: ECSController,private val grid: Array<BooleanArray>,p
 
         ImGui.end()
     }
+    */
 }

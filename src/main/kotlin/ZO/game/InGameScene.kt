@@ -1,28 +1,36 @@
 package ZO.game
 
-import ZO.custonEntities.GridMesh
+import ecs.systems.grid.GridMesh
 import base.util.IScene
 import ecs.components.CameraComponent
+import ecs.components.GridComponent
+import ecs.components.TransformComponent
+import ecs.components.clickBox.ClickBoxComponent
+import ecs.components.mesh.FlatMeshComponent
+import ecs.components.mesh.OpenMeshComponent
+import ecs.systems.grid.MeshGridSystem
+import ecs.systems.MeshInteractSystem
+import ecs.systems.MeshRenderSystem
 
 
 class InGameScene : IScene() {
 
-    override fun start(){
-        super.start()
-        val camID = controller.createEntity()
-        controller.assign<CameraComponent>(camID)
+    init{
+        val cam = CameraComponent()
+        val grid = GridComponent().setGrid(10, 6).setScreenHeight(0.9f).setEdgeWidthPercentage(0.3f)
 
+        controller.setSystems(
+            MeshInteractSystem(cam) ,
+            MeshRenderSystem(cam) ,
+            MeshGridSystem(grid,cam),
+        )
 
-       GridMesh(controller,
-              //arrayOf(
-              //booleanArrayOf(true,true,false,true,true,true,true,true,false),
-              //booleanArrayOf(true,true,true,true,false,true,false,true,false),
-              //booleanArrayOf(true,true,false,false,false,true,false,false,true),
-              //booleanArrayOf(true,true,true,true,true,true,true,false,true),
-              //booleanArrayOf(true,true,true,true,true,true,true,false,true),
-              //booleanArrayOf(false,true,false,false,true,true,true,false,false),)
-               10,6
-       ,0.9f)
+        controller.setComponentTypes(
+            TransformComponent::class,
+            FlatMeshComponent::class,
+            OpenMeshComponent::class,
+            ClickBoxComponent::class,
+            )
     }
 
 }

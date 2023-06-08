@@ -24,6 +24,7 @@ class ImGuiTestWindow : IImGuiWindow {
     private val resizableStr = ImString(5)
     private val showDemoWindow = ImBool()
 
+
     fun start(){
         ImGuiController.addGui(this)
     }

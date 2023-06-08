@@ -2,14 +2,7 @@ package ecs
 
 import base.util.IImGuiWindow
 import base.util.ImGuiController
-import ecs.components.*
-import ecs.components.clickBox.ClickBoxComponent
-import ecs.components.mesh.FlatMeshComponent
-import ecs.components.mesh.OpenMeshComponent
 import ecs.systems.IEntityComponentSystem
-import ecs.systems.MeshGridSystem
-import ecs.systems.MeshInteractSystem
-import ecs.systems.MeshRenderSystem
 import imgui.ImGui
 import imgui.enums.ImGuiCond
 import imgui.enums.ImGuiTabBarFlags
@@ -17,19 +10,28 @@ import kotlin.reflect.KClass
 
 class ECSController : IImGuiWindow {
 
-    val componentsTypes: Map< KClass<*>, MutableMap<Int, *>> = mapOf(
-            TransformComponent::class   to  mutableMapOf<Int, TransformComponent>(),
-            FlatMeshComponent::class    to  mutableMapOf<Int, FlatMeshComponent>(),
-            OpenMeshComponent::class    to  mutableMapOf<Int, FlatMeshComponent>(),
-            CameraComponent::class      to  mutableMapOf<Int, CameraComponent>(),
-            ClickBoxComponent::class    to  mutableMapOf<Int, ClickBoxComponent>(),
-            GridComponent::class        to  mutableMapOf<Int, GridComponent>(),
-            // MovementInputComponent::class  to  mutableMapOf<Int, MovementInputComponent>(),
-    )
+    //var componentsTypes: MutableMap< KClass<*>, MutableMap<Int, *>> = mutableMapOf(
+    //        TransformComponent::class   to  mutableMapOf<Int, TransformComponent>(),
+    //        FlatMeshComponent::class    to  mutableMapOf<Int, FlatMeshComponent>(),
+    //        OpenMeshComponent::class    to  mutableMapOf<Int, FlatMeshComponent>(),
+    //        CameraComponent::class      to  mutableMapOf<Int, CameraComponent>(),
+    //        ClickBoxComponent::class    to  mutableMapOf<Int, ClickBoxComponent>(),
+    //        GridComponent::class        to  mutableMapOf<Int, GridComponent>(),
+    //        // MovementInputComponent::class  to  mutableMapOf<Int, MovementInputComponent>(),
+    //)
+    var componentsTypes: MutableMap< KClass<*>, MutableMap<Int, *>> = mutableMapOf()
+        private set
+    fun setComponentTypes(vararg comTypes: KClass<*>){
+        componentsTypes = mutableMapOf()
+        for (comType in comTypes) {
+            componentsTypes[comType] = mutableMapOf<Int, Any>()
+        }
+    }
 
-    private val systems : Array<IEntityComponentSystem> = arrayOf(
-        MeshInteractSystem ,MeshRenderSystem, MeshGridSystem
-    )
+    private lateinit var systems : Array<IEntityComponentSystem>
+    fun setSystems(vararg sys : IEntityComponentSystem){
+        systems = sys as Array<IEntityComponentSystem>
+    }
 
     private var entityIndex = 0
     fun createEntity() : Int {
@@ -80,9 +82,8 @@ class ECSController : IImGuiWindow {
     }
 
     fun onWindowResize(width: Int, height: Int){
-        val cameras = componentsTypes[CameraComponent::class] as MutableMap<Int, CameraComponent>
-        for(cam in cameras.values){
-            cam.resizeViewPort(width.toFloat(), height.toFloat())
+        for(system in systems){
+            system.onWindowResize(width, height)
         }
     }
     fun start(){

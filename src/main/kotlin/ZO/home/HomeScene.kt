@@ -5,18 +5,33 @@ import base.util.Colors
 import base.util.Game
 import base.util.IScene
 import ecs.components.CameraComponent
+import ecs.components.GridComponent
+import ecs.components.TransformComponent
 import ecs.components.mesh.FlatMeshComponent
 import ecs.components.clickBox.CubeClickBox
 import ecs.components.clickBox.ClickBoxComponent
+import ecs.components.mesh.OpenMeshComponent
+import ecs.systems.grid.MeshGridSystem
+import ecs.systems.MeshInteractSystem
+import ecs.systems.MeshRenderSystem
 import org.joml.Vector2f
 
 
 class HomeScene : IScene() {
 
-    override fun start(){
-        super.start()
-        val camID = controller.createEntity()
-        controller.assign<CameraComponent>(camID)
+    init{
+        val cam = CameraComponent()
+        controller.setSystems(
+            MeshInteractSystem(cam),
+            MeshRenderSystem(cam)
+        )
+        controller.setComponentTypes(
+            TransformComponent::class,
+            FlatMeshComponent::class,
+            OpenMeshComponent::class,
+            ClickBoxComponent::class,
+            )
+
         genBackground()
     }
 
