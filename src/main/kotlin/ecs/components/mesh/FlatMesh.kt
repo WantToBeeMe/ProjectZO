@@ -11,10 +11,9 @@ open class FlatMesh {
     var vertices: FloatArray = FloatArray(0)// Array to store the vertices of the mesh
     var triangles: IntArray = IntArray(0) // Array to store the indices of the triangles in the mesh
 
-    var clickable = false
 
     // The interaction value of the mesh
-    var interact = 0
+    var clickBoxInteract = 0
         set(value) {
             if (value >= 0) {
                 field = value
@@ -23,6 +22,12 @@ open class FlatMesh {
                 field = 0 // Set the value to 0 as a fallback
             }
         }
+    var visualClickBoxFeedback = true
+        private set
+    fun setVisualClickBox(value : Boolean ) : FlatMesh {
+        visualClickBoxFeedback = value
+        return this
+    }
 
     // Adds the vertices and triangles from another mesh to this mesh
     fun addMesh(mesh: FlatMesh) {

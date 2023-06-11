@@ -4,19 +4,16 @@ import base.input.IMouseClickObserver
 import base.input.Mouse
 import base.shader.Shader
 import base.shader.ShaderObject
-import base.util.Window
+import base.util.Maf
 import ecs.ECSController
 import ecs.components.CameraComponent
 import ecs.components.TransformComponent
 import ecs.components.clickBox.ClickBoxComponent
-import ecs.components.clickBox.MouseClickBoxVisualizer
 import ecs.components.mesh.FlatMeshComponent
 import imgui.ImBool
 import imgui.ImGui
 import org.joml.Vector2f
 import org.joml.Vector4f
-import kotlin.math.cos
-import kotlin.math.sin
 
 class MeshInteractSystem(private val defaultCam : CameraComponent)  : IEntityComponentSystem() , IMouseClickObserver{
     private val currentShader : ShaderObject = Shader.FLAT_OBJECT.get()
@@ -39,25 +36,25 @@ class MeshInteractSystem(private val defaultCam : CameraComponent)  : IEntityCom
 
         val mouseX = Mouse.getX()
         val mouseY = Mouse.getY()
-        val realMousePos = getRealMousePosition(mouseX.toDouble(), mouseY.toDouble())
+        val realMousePos = Maf.pixelToGLCords(mouseX,mouseY,defaultCam.aspect)//getRealMousePosition(mouseX.toDouble(), mouseY.toDouble())
 
         for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
-            val transformedMousePos = transformPoint(realMousePos, transforms[entityID])
-            if (clickBoxMesh.second.isInside(transformedMousePos)) {
-                if (clickBoxMesh.first.interact == 1) {
+            //val transformedMousePos = transformPoint()
+            if (clickBoxMesh.second.isInside(realMousePos, transforms[entityID])) {
+                if (clickBoxMesh.first.clickBoxInteract == 1) {
                     clickBoxMesh.second.whileHoverEvent?.let { it(Vector2f(mouseX, mouseY), realMousePos) }
                 } else {
                     clickBoxMesh.second.onEnterEvent?.let { it(Vector2f(mouseX, mouseY), realMousePos) }
-                    clickBoxMesh.first.interact = 1
+                    clickBoxMesh.first.clickBoxInteract = 1
                 }
                 if (clickBoxMesh.second.hold) {
                     clickBoxMesh.second.whileClickEvent?.let { it(Vector2f(mouseX, mouseY), realMousePos) }
-                    clickBoxMesh.first.interact = 2
+                    clickBoxMesh.first.clickBoxInteract = 2
                 }
-            } else if (clickBoxMesh.first.interact != 0) {
+            } else if (clickBoxMesh.first.clickBoxInteract != 0) {
                 clickBoxMesh.second.hold = false
                 clickBoxMesh.second.onLeaveEvent?.let { it(Vector2f(mouseX, mouseY), realMousePos) }
-                clickBoxMesh.first.interact = 0
+                clickBoxMesh.first.clickBoxInteract = 0
             }
         }
 
@@ -74,11 +71,12 @@ class MeshInteractSystem(private val defaultCam : CameraComponent)  : IEntityCom
 
             for((entityID, clickBoxMesh) in flatClickBoxMeshes){
                 if(!clickBoxMesh.second.showDebugLines) continue
-                currentShader.uploadVec4f("uColor", Vector4f(1f,1f,clickBoxMesh.first.interact.toFloat(),1f))
+                currentShader.uploadVec4f("uColor", Vector4f(1f,1f,clickBoxMesh.first.clickBoxInteract.toFloat(),1f))
                 clickBoxMesh.second.renderClickBox()
-                val transformedMousePos  = transformPoint(realMousePos, transforms[entityID])
-                currentShader.uploadVec4f("uColor", Vector4f(1f,0f,1f,1f))
-                MouseClickBoxVisualizer.renderMouse(transformedMousePos.x, transformedMousePos.y)
+                //tranform hasbeen moved to the ClickBoxComp. so that doesnt work here anymore
+               //val transformedMousePos  = ClickBoxComponent.transformPoint(realMousePos, transforms[entityID])
+               //currentShader.uploadVec4f("uColor", Vector4f(1f,0f,1f,1f))
+               //MouseClickBoxVisualizer.renderMouse(transformedMousePos.x, transformedMousePos.y)
             }
 
             currentShader.detach()
@@ -87,19 +85,7 @@ class MeshInteractSystem(private val defaultCam : CameraComponent)  : IEntityCom
 
 
 
-    private fun transformPoint(point: Vector2f, transform: TransformComponent? ): Vector2f {
-        if(transform == null) return point
-        //translation
-        var newPoint = Vector2f(point).add(Vector2f(transform.getPosition()).mul(-1f))
 
-        //rotate
-        val angleRad = transform.getRotation(true)
-        val cos = cos(angleRad.toDouble()).toFloat()
-        val sin = sin(angleRad.toDouble()).toFloat()
-        newPoint = Vector2f(newPoint.x * cos - newPoint.y * sin,  newPoint.x * sin + newPoint.y * cos)
-        //scale
-        return newPoint.mul(Vector2f(1f).div(transform.getScale()))
-    }
 
 
     override fun guiOptions() {
@@ -112,12 +98,12 @@ class MeshInteractSystem(private val defaultCam : CameraComponent)  : IEntityCom
     override fun onMouseClick(xPos: Double, yPos: Double, button: Int) {
         val transforms = controller.getComponents<TransformComponent>()
         val flatClickBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, ClickBoxComponent>()
-        val realMousePos = getRealMousePosition(xPos, yPos)
+        val realMousePos = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),defaultCam.aspect)
 
         for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
             if (clickBoxMesh.second.onClickEvent == null && clickBoxMesh.second.whileClickEvent == null) continue
-            val transformedMousePos = transformPoint(realMousePos, transforms[entityID])
-            if (clickBoxMesh.second.isInside(transformedMousePos)) {
+            //val transformedMousePos = transformPoint(realMousePos, transforms[entityID])
+            if (clickBoxMesh.second.isInside(realMousePos, transforms[entityID])) {
                 clickBoxMesh.second.onClickEvent?.let { it(Vector2f(xPos.toFloat(), yPos.toFloat()), realMousePos, button) }
                 clickBoxMesh.second.hold = true
             }
@@ -127,22 +113,16 @@ class MeshInteractSystem(private val defaultCam : CameraComponent)  : IEntityCom
     override fun onMouseRelease(xPos: Double, yPos: Double, button: Int) {
         val transforms = controller.getComponents<TransformComponent>()
         val flatClickBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, ClickBoxComponent>()
-        val realMousePos = getRealMousePosition(xPos, yPos)
+        val realMousePos = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),defaultCam.aspect)
 
         for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
             if (clickBoxMesh.second.onReleaseEvent == null && clickBoxMesh.second.whileClickEvent == null) continue
-            val transformedMousePos = transformPoint(realMousePos, transforms[entityID])
-            if (clickBoxMesh.second.isInside(transformedMousePos)) {
+            //val transformedMousePos = transformPoint(realMousePos, transforms[entityID])
+            if (clickBoxMesh.second.isInside(realMousePos, transforms[entityID])) {
                 clickBoxMesh.second.onReleaseEvent?.let { it(Vector2f(xPos.toFloat(), yPos.toFloat()), realMousePos, button) }
                 clickBoxMesh.second.hold = false
             }
         }
-    }
-
-    private fun getRealMousePosition(xPos: Double, yPos: Double): Vector2f {
-        val mouseX = xPos.toFloat()
-        val mouseY = yPos.toFloat()
-        return Vector2f(((mouseX / Window.getWidth()) * 2f - 1f) * defaultCam.aspect, -(mouseY / Window.getHeight()) * 2f + 1f)
     }
 
     override fun onWindowResize(width: Int, height: Int) {

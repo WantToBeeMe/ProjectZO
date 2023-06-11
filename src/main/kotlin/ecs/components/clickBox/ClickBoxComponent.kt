@@ -1,7 +1,10 @@
 package ecs.components.clickBox
 
+import ecs.components.TransformComponent
 import org.joml.Vector2f
 import org.lwjgl.opengl.GL45.*
+import kotlin.math.cos
+import kotlin.math.sin
 
 class ClickBoxComponent {
     private val clickBoxes : MutableList<IClickBox> = mutableListOf()
@@ -53,9 +56,10 @@ class ClickBoxComponent {
         return this
     }
 
-    fun isInside(point: Vector2f): Boolean {
+    fun isInside(point: Vector2f, transform: TransformComponent?): Boolean {
+        val realPoint = transformPoint(point, transform)
         for(box in clickBoxes)
-            if( box.isInside(point) )
+            if( box.isInside(realPoint) )
                 return true
         return false
     }
@@ -117,5 +121,18 @@ class ClickBoxComponent {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
     }
 
+    private fun transformPoint(point: Vector2f, transform: TransformComponent? ): Vector2f {
+        if(transform == null) return point
+        //translation
+        var newPoint = Vector2f(point).add(Vector2f(transform.getPosition()).mul(-1f))
+
+        //rotate
+        val angleRad = transform.getRotation(true)
+        val cos = cos(angleRad.toDouble()).toFloat()
+        val sin = sin(angleRad.toDouble()).toFloat()
+        newPoint = Vector2f(newPoint.x * cos - newPoint.y * sin,  newPoint.x * sin + newPoint.y * cos)
+        //scale
+        return newPoint.mul(Vector2f(1f).div(transform.getScale()))
+    }
 
 }

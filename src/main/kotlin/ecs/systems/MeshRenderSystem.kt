@@ -59,7 +59,7 @@ class MeshRenderSystem(private val defaultCam : CameraComponent) : IEntityCompon
             currentShader.uploadMat3f("uTransform", transformComp.transform)
             currentShader.uploadFloat("uDepth", mesh.value.depth)
             currentShader.uploadVec4f("uColor", mesh.value.color)
-            currentShader.uploadInt("uInteract", mesh.value.interact)
+            currentShader.uploadInt("uInteract", if(mesh.value.visualClickBoxFeedback) mesh.value.clickBoxInteract else 0)
             mesh.value.render()
         }
         currentShader.detach()

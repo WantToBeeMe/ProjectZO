@@ -78,7 +78,7 @@ class OpenMeshComponent {
         //allocate space for the vertices
         vboID = glGenBuffers()
         glBindBuffer(GL_ARRAY_BUFFER, vboID)
-        glBufferData(GL_ARRAY_BUFFER, (vertices.size * Float.SIZE_BYTES).toLong(), GL_DYNAMIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW)
 
         //create and upload indices buffer
         eboID = glGenBuffers()
@@ -97,7 +97,7 @@ class OpenMeshComponent {
     fun render(){
         if(!created) return
         glBindBuffer(GL_ARRAY_BUFFER,vboID)
-        glBufferSubData(GL_ARRAY_BUFFER, 0, vertices)
+        //glBufferSubData(GL_ARRAY_BUFFER, 0, vertices)
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,eboID)
         //glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, triangles)
