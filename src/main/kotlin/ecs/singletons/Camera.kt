@@ -1,11 +1,11 @@
-package ecs.components
+package ecs.singletons
 
 import org.joml.Matrix4f
 import org.joml.Vector3f
 
 
 //todo: adjust projection on window resize
-class CameraComponent {
+class Camera {
     private val _projectionMatrix : Matrix4f = Matrix4f();
     val  projectionMatrix get() = _projectionMatrix
     private val _viewMatrix : Matrix4f = Matrix4f();

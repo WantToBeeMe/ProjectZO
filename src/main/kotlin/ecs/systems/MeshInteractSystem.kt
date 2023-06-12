@@ -6,7 +6,7 @@ import base.shader.Shader
 import base.shader.ShaderObject
 import base.util.Maf
 import ecs.ECSController
-import ecs.components.CameraComponent
+import ecs.singletons.Camera
 import ecs.components.TransformComponent
 import ecs.components.clickBox.ClickBoxComponent
 import ecs.components.mesh.FlatMeshComponent
@@ -15,7 +15,7 @@ import imgui.ImGui
 import org.joml.Vector2f
 import org.joml.Vector4f
 
-class MeshInteractSystem(private val defaultCam : CameraComponent)  : IEntityComponentSystem() , IMouseClickObserver{
+object MeshInteractSystem : IEntityComponentSystem() , IMouseClickObserver{
     private val currentShader : ShaderObject = Shader.FLAT_OBJECT.get()
     private val noTransform =  TransformComponent().transform
     private val showClickBox = ImBool(false)
@@ -33,10 +33,11 @@ class MeshInteractSystem(private val defaultCam : CameraComponent)  : IEntityCom
         super.update(dt)
         val transforms = controller.getComponents<TransformComponent>()
         val flatClickBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, ClickBoxComponent>()
+        val camera = controller.getSingleton<Camera>()
 
         val mouseX = Mouse.getX()
         val mouseY = Mouse.getY()
-        val realMousePos = Maf.pixelToGLCords(mouseX,mouseY,defaultCam.aspect)//getRealMousePosition(mouseX.toDouble(), mouseY.toDouble())
+        val realMousePos = Maf.pixelToGLCords(mouseX,mouseY,camera.aspect)//getRealMousePosition(mouseX.toDouble(), mouseY.toDouble())
 
         for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
             //val transformedMousePos = transformPoint()
@@ -63,8 +64,8 @@ class MeshInteractSystem(private val defaultCam : CameraComponent)  : IEntityCom
             currentShader.use()
             currentShader.enableBlend()
             currentShader.enableDepthTest()
-            currentShader.uploadMat4f("uProjection", defaultCam.projectionMatrix )
-            currentShader.uploadMat4f("uView",defaultCam.viewMatrix)
+            currentShader.uploadMat4f("uProjection", camera.projectionMatrix )
+            currentShader.uploadMat4f("uView",camera.viewMatrix)
             currentShader.uploadMat3f("uTransform", noTransform)
             currentShader.uploadFloat("uDepth", 1f)
             currentShader.uploadInt("uInteract", 0)
@@ -98,7 +99,8 @@ class MeshInteractSystem(private val defaultCam : CameraComponent)  : IEntityCom
     override fun onMouseClick(xPos: Double, yPos: Double, button: Int) {
         val transforms = controller.getComponents<TransformComponent>()
         val flatClickBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, ClickBoxComponent>()
-        val realMousePos = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),defaultCam.aspect)
+        val camera = controller.getSingleton<Camera>()
+        val realMousePos = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),camera.aspect)
 
         for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
             if (clickBoxMesh.second.onClickEvent == null && clickBoxMesh.second.whileClickEvent == null) continue
@@ -113,7 +115,8 @@ class MeshInteractSystem(private val defaultCam : CameraComponent)  : IEntityCom
     override fun onMouseRelease(xPos: Double, yPos: Double, button: Int) {
         val transforms = controller.getComponents<TransformComponent>()
         val flatClickBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, ClickBoxComponent>()
-        val realMousePos = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),defaultCam.aspect)
+        val camera = controller.getSingleton<Camera>()
+        val realMousePos = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),camera.aspect)
 
         for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
             if (clickBoxMesh.second.onReleaseEvent == null && clickBoxMesh.second.whileClickEvent == null) continue
@@ -125,8 +128,5 @@ class MeshInteractSystem(private val defaultCam : CameraComponent)  : IEntityCom
         }
     }
 
-    override fun onWindowResize(width: Int, height: Int) {
-        defaultCam.resizeViewPort(width.toFloat(), height.toFloat())
-    }
 
 }

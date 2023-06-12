@@ -2,6 +2,7 @@ package ecs
 
 import base.util.IImGuiWindow
 import base.util.ImGuiController
+import ecs.singletons.Camera
 import ecs.systems.IEntityComponentSystem
 import imgui.ImGui
 import imgui.enums.ImGuiCond
@@ -10,25 +11,23 @@ import kotlin.reflect.KClass
 
 class ECSController : IImGuiWindow {
 
-    //var componentsTypes: MutableMap< KClass<*>, MutableMap<Int, *>> = mutableMapOf(
-    //        TransformComponent::class   to  mutableMapOf<Int, TransformComponent>(),
-    //        FlatMeshComponent::class    to  mutableMapOf<Int, FlatMeshComponent>(),
-    //        OpenMeshComponent::class    to  mutableMapOf<Int, FlatMeshComponent>(),
-    //        CameraComponent::class      to  mutableMapOf<Int, CameraComponent>(),
-    //        ClickBoxComponent::class    to  mutableMapOf<Int, ClickBoxComponent>(),
-    //        GridComponent::class        to  mutableMapOf<Int, GridComponent>(),
-    //        // MovementInputComponent::class  to  mutableMapOf<Int, MovementInputComponent>(),
-    //)
+    val singletons: MutableMap<KClass<*>, Any> = mutableMapOf()
+    private lateinit var systems : Array<IEntityComponentSystem>
     var componentsTypes: MutableMap< KClass<*>, MutableMap<Int, *>> = mutableMapOf()
         private set
+
+    inline fun <reified T : Any> addSingleton(instance: T) {
+        singletons[T::class] = instance
+    }
+    inline fun <reified T : Any> getSingleton(): T {
+        return singletons[T::class] as T  //as? T
+    }
     fun setComponentTypes(vararg comTypes: KClass<*>){
         componentsTypes = mutableMapOf()
         for (comType in comTypes) {
             componentsTypes[comType] = mutableMapOf<Int, Any>()
         }
     }
-
-    private lateinit var systems : Array<IEntityComponentSystem>
     fun setSystems(vararg sys : IEntityComponentSystem){
         systems = sys as Array<IEntityComponentSystem>
     }
@@ -82,8 +81,10 @@ class ECSController : IImGuiWindow {
     }
 
     fun onWindowResize(width: Int, height: Int){
-        for(system in systems){
-            system.onWindowResize(width, height)
+        for((key, ton) in singletons){
+            if(key == Camera::class){
+                (ton as Camera).resizeViewPort(width.toFloat(), height.toFloat())
+            }
         }
     }
     fun start(){

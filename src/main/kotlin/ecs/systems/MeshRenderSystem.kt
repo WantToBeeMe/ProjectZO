@@ -2,7 +2,7 @@ package ecs.systems
 
 import base.shader.Shader
 import base.shader.ShaderObject
-import ecs.components.CameraComponent
+import ecs.singletons.Camera
 import ecs.components.mesh.FlatMeshComponent
 import ecs.components.mesh.OpenMeshComponent
 import ecs.components.TransformComponent
@@ -11,7 +11,7 @@ import imgui.ImGui
 import org.lwjgl.opengl.GL45.*
 
 //todo: for now it takes in the first camera component that exist and takes that as base thingy
-class MeshRenderSystem(private val defaultCam : CameraComponent) : IEntityComponentSystem() {
+object MeshRenderSystem : IEntityComponentSystem() {
     private val flatShader : ShaderObject = Shader.FLAT_OBJECT.get()
     private val openShader : ShaderObject = Shader.OPEN_OBJECT.get()
     private val identityTransform = TransformComponent()
@@ -26,14 +26,15 @@ class MeshRenderSystem(private val defaultCam : CameraComponent) : IEntityCompon
         if(showWireFrames.get()) glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
         else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
+        val cam = controller.getSingleton<Camera>()
 
         var currentShader = openShader
         currentShader.use()
         currentShader.enableBlend()
         currentShader.enableDepthTest()
 
-        currentShader.uploadMat4f("uProjection", defaultCam.projectionMatrix )
-        currentShader.uploadMat4f("uView", defaultCam.viewMatrix)
+        currentShader.uploadMat4f("uProjection", cam.projectionMatrix )
+        currentShader.uploadMat4f("uView", cam.viewMatrix)
 
         for(mesh in openMeshes){
             val transformComp = transforms[mesh.key] ?: identityTransform
@@ -51,8 +52,8 @@ class MeshRenderSystem(private val defaultCam : CameraComponent) : IEntityCompon
         currentShader.enableBlend()
         currentShader.enableDepthTest()
 
-        currentShader.uploadMat4f("uProjection", defaultCam.projectionMatrix )
-        currentShader.uploadMat4f("uView", defaultCam.viewMatrix)
+        currentShader.uploadMat4f("uProjection", cam.projectionMatrix )
+        currentShader.uploadMat4f("uView", cam.viewMatrix)
 
         for(mesh in flatMeshes){
             val transformComp = transforms[mesh.key] ?: identityTransform
@@ -70,10 +71,6 @@ class MeshRenderSystem(private val defaultCam : CameraComponent) : IEntityCompon
             ImGui.checkbox("Show wireframe", showWireFrames)
             ImGui.endTabItem();
         }
-    }
-
-    override fun onWindowResize(width: Int, height: Int) {
-        defaultCam.resizeViewPort(width.toFloat(), height.toFloat())
     }
 
 }

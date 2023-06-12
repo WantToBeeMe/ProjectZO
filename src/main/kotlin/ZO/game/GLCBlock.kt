@@ -2,7 +2,7 @@ package ZO.game
 
 import base.util.Colors
 import ecs.ECSController
-import ecs.components.GridComponent
+import ecs.singletons.GridSettings
 import ecs.components.GridLockedComponent
 import ecs.components.TransformComponent
 import ecs.components.clickBox.ClickBoxComponent
@@ -11,7 +11,7 @@ import ecs.components.mesh.FlatMeshComponent
 import ecs.components.mesh.customTemplates.FlatCurvedBoxMesh
 import org.joml.Vector2f
 
-class GLCBlock(controller :ECSController,width:Int, height: Int, gridSettings : GridComponent, blockSpacingFactor : Float) {
+class GLCBlock(controller :ECSController, width:Int, height: Int, gridSettings : GridSettings, blockSpacingFactor : Float) {
     val GLC : GridLockedComponent
     val transform : TransformComponent
     val id : Int

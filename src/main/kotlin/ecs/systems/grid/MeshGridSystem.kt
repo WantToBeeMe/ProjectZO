@@ -3,11 +3,10 @@ package ecs.systems.grid
 import ZO.game.GLCBlock
 import base.input.IMouseClickObserver
 import base.input.Mouse
-import base.util.Colors
 import base.util.Maf
 import ecs.ECSController
-import ecs.components.CameraComponent
-import ecs.components.GridComponent
+import ecs.singletons.Camera
+import ecs.singletons.GridSettings
 import ecs.components.GridLockedComponent
 import ecs.components.TransformComponent
 import ecs.components.clickBox.ClickBoxComponent
@@ -17,18 +16,20 @@ import ecs.systems.IEntityComponentSystem
 import org.joml.Vector2f
 import org.joml.Vector2i
 
-class MeshGridSystem(private val gridSettings : GridComponent, private val defaultCam : CameraComponent)  : IEntityComponentSystem(), IMouseClickObserver {
-    private val edgeSpacingFactor: Float = 0.08f
-    private val cornerPercentage : Float = 0.48f
-    private val blockSpacingFactor : Float = 0.05f
+object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
+    private const val edgeSpacingFactor: Float = 0.08f
+    private const val cornerPercentage : Float = 0.48f
+    private const val blockSpacingFactor : Float = 0.05f
 
     private var shadowGLC : GridLockedComponent? = null
     private var shadowTransform : TransformComponent? = null
     private var shadowMesh : FlatMeshComponent? = null
     private fun createShadow(width: Int, height:Int){
+        val gridSettings = controller.getSingleton<GridSettings>()
         val borderWidth = gridSettings.borderWidth
         val blockSize = gridSettings.blockSize
         val perBlockSpacing = blockSize * blockSpacingFactor
+        val camera = controller.getSingleton<Camera>()
 
         val shadowID = controller.createEntity()
         shadowMesh = controller.assign<FlatMeshComponent>(shadowID)
@@ -43,7 +44,7 @@ class MeshGridSystem(private val gridSettings : GridComponent, private val defau
         shadowMesh!!.depth = 0.05f
         shadowGLC = controller.assign<GridLockedComponent>(shadowID).setWidth(width).setHeight(height)
         shadowTransform = controller.assign<TransformComponent>(shadowID)
-        val gLMouse = Maf.pixelToGLCords(Mouse.getX(),Mouse.getY(),defaultCam.aspect)
+        val gLMouse = Maf.pixelToGLCords(Mouse.getX(),Mouse.getY(),camera.aspect)
         val leftTop = gridSettings.getGLCLeftTopIndex(  gLMouse , shadowGLC!!)
         val transform = gridSettings.getGLCGirdTransform(leftTop , shadowGLC!!)
         shadowTransform!!.setPosition(transform.x, transform.y)
@@ -60,6 +61,7 @@ class MeshGridSystem(private val gridSettings : GridComponent, private val defau
 
     override fun create() {
         super.create()
+        val gridSettings = controller.getSingleton<GridSettings>()
         GridMeshGenerator(controller, gridSettings, edgeSpacingFactor,cornerPercentage,blockSpacingFactor)
         GLCBlock(controller,2,2, gridSettings, blockSpacingFactor)
         GLCBlock(controller,3,4, gridSettings, blockSpacingFactor)
@@ -76,12 +78,14 @@ class MeshGridSystem(private val gridSettings : GridComponent, private val defau
         Mouse.subscribe(this)
     }
 
-    private var oldIndex = Vector2i()
+    private var oldIndex = Vector2i(-1)
     private var holding: Pair<Int,Triple<TransformComponent, ClickBoxComponent, GridLockedComponent>>? = null
     override fun update(dt: Float) {
         super.update(dt)
         if(holding == null) return
-        val gLMouse = Maf.pixelToGLCords(Mouse.getX(),Mouse.getY(),defaultCam.aspect)
+        val gridSettings = controller.getSingleton<GridSettings>()
+        val camera = controller.getSingleton<Camera>()
+        val gLMouse = Maf.pixelToGLCords(Mouse.getX(),Mouse.getY(),camera.aspect)
         holding!!.second.first.setPosition(gLMouse.x,gLMouse.y)
         val leftTop = gridSettings.getGLCLeftTopIndex(  gLMouse , shadowGLC!!)
         val transform = gridSettings.getGLCGirdTransform(leftTop , shadowGLC!!)
@@ -94,8 +98,10 @@ class MeshGridSystem(private val gridSettings : GridComponent, private val defau
 
     override fun onMouseClick(xPos: Double, yPos: Double, button: Int) {
         if(holding != null) return
+        val gridSettings = controller.getSingleton<GridSettings>()
         val gLComponents = controller.getTripleComponents<TransformComponent, ClickBoxComponent, GridLockedComponent>()
-        val gLMouse = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),defaultCam.aspect)
+        val camera = controller.getSingleton<Camera>()
+        val gLMouse = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),camera.aspect)
         for((gLCKey, gLComponent) in gLComponents){
             if(gLComponent.second.isInside(gLMouse,gLComponent.first)){
                 holding = Pair(gLCKey,gLComponent)
@@ -109,8 +115,10 @@ class MeshGridSystem(private val gridSettings : GridComponent, private val defau
 
     override fun onMouseRelease(xPos: Double, yPos: Double, button: Int) {
         if(holding == null) return
+        val gridSettings = controller.getSingleton<GridSettings>()
         val GLC = holding!!.second.third
-        val leftTop = gridSettings.getGLCLeftTopIndex(  Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),defaultCam.aspect) , GLC)
+        val camera = controller.getSingleton<Camera>()
+        val leftTop = gridSettings.getGLCLeftTopIndex(  Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),camera.aspect) , GLC)
         if(gridSettings.canAddGLC(GLC,leftTop.x, leftTop.y)){
             gridSettings.addGLC( holding!!.first, GLC,leftTop.x, leftTop.y  )
             val transform = gridSettings.getGLCGirdTransform(leftTop , GLC)
@@ -118,7 +126,7 @@ class MeshGridSystem(private val gridSettings : GridComponent, private val defau
            // val gridPos = gridSettings.getGLCGirdTransform(gLMouse, GLC)
 
         }
-        else if(gridSettings.canAddGLC(GLC,oldIndex.x, oldIndex.y)) {
+        else if(oldIndex.x != -1 && gridSettings.canAddGLC(GLC,oldIndex.x, oldIndex.y)) {
             val transform = gridSettings.getGLCGirdTransform(oldIndex , GLC)
             holding!!.second.first.setPosition(transform.x, transform.y)
             gridSettings.addGLC( holding!!.first, GLC,oldIndex.x, oldIndex.y  )

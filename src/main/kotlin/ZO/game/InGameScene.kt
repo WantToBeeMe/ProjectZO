@@ -1,8 +1,8 @@
 package ZO.game
 
 import base.util.IScene
-import ecs.components.CameraComponent
-import ecs.components.GridComponent
+import ecs.singletons.Camera
+import ecs.singletons.GridSettings
 import ecs.components.GridLockedComponent
 import ecs.components.TransformComponent
 import ecs.components.clickBox.ClickBoxComponent
@@ -16,13 +16,13 @@ import ecs.systems.MeshRenderSystem
 class InGameScene : IScene() {
 
     init {
-        val cam = CameraComponent()
-        val grid = GridComponent().setGrid(16, 10).setScreenHeight(0.9f).setEdgeWidthPercentage(0.3f)
+        controller.addSingleton(Camera())
+        controller.addSingleton(GridSettings().setGrid(16, 10).setScreenHeight(0.9f).setEdgeWidthPercentage(0.3f))
 
         controller.setSystems(
-                MeshInteractSystem(cam),
-                MeshRenderSystem(cam),
-                MeshGridSystem(grid, cam),
+                MeshInteractSystem,
+                MeshRenderSystem,
+                MeshGridSystem,
         )
 
         controller.setComponentTypes(

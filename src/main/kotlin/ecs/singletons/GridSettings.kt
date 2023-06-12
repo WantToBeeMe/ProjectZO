@@ -1,10 +1,11 @@
-package ecs.components
+package ecs.singletons
 
 import base.util.Maf
+import ecs.components.GridLockedComponent
 import org.joml.Vector2f
 import org.joml.Vector2i
 
-class GridComponent {
+class GridSettings {
     var edgeWidthPercentage = 0.3f
         private set
     var screenHeight = 0.9f
@@ -16,20 +17,20 @@ class GridComponent {
             private set
 
 
-    fun setGrid(width: Int, height: Int) : GridComponent{
+    fun setGrid(width: Int, height: Int) : GridSettings {
         return setGrid ( Array(height) { BooleanArray(width) { true } } )
     }
-    fun setGrid(g : Array<BooleanArray>) : GridComponent{
+    fun setGrid(g : Array<BooleanArray>) : GridSettings {
         grid = g
         reCalculateAttributes()
         return this
     }
-    fun setScreenHeight(height : Float) : GridComponent{
+    fun setScreenHeight(height : Float) : GridSettings {
         screenHeight = if(height > 0) height else 0f
         reCalculateAttributes()
         return this
     }
-    fun setEdgeWidthPercentage( perc : Float ) : GridComponent{
+    fun setEdgeWidthPercentage( perc : Float ) : GridSettings {
         edgeWidthPercentage = if(perc > 0) {
             if(perc <= 1) perc
             else 1f
@@ -87,7 +88,7 @@ class GridComponent {
 
     //todo: these 2 functions dont take in account the transformation of the camera, like scale and translation (as specially the translation is inportant)
 
-    fun getGLCLeftTopIndex(gLPos: Vector2f, comp: GridLockedComponent ) : Vector2i {
+    fun getGLCLeftTopIndex(gLPos: Vector2f, comp: GridLockedComponent) : Vector2i {
         val mostLeft = (-blockSize * grid[0].size) / 2
         val mostTop = screenHeight - borderWidth
         val newLeft = mostLeft + (blockSize/2)*(comp.width-1)
@@ -101,7 +102,7 @@ class GridComponent {
 
         return Vector2i(relativeHorizontalIndex, relativeVerticalIndex)
     }
-    fun getGLCGirdTransform(leftTop: Vector2i, comp: GridLockedComponent ) : Vector2f {
+    fun getGLCGirdTransform(leftTop: Vector2i, comp: GridLockedComponent) : Vector2f {
         val mostLeft = (-blockSize * grid[0].size) / 2
         val mostTop = screenHeight - borderWidth
         return Vector2f(mostLeft+ (blockSize/2)*comp.width + blockSize*leftTop.x, mostTop - (blockSize/2)*comp.height - blockSize*leftTop.y)
