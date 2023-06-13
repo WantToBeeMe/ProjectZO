@@ -2,7 +2,7 @@ package ecs.components.clickBox
 
 import org.joml.Vector2f
 
-class CubeClickBox(private val leftTop: Vector2f, private val rightBot : Vector2f) : IClickBox {
+class RectangleClickBox(private val leftTop: Vector2f, private val rightBot : Vector2f) : IClickBox {
     override fun isInside(point: Vector2f): Boolean {
         return point.x >= leftTop.x && point.x <= rightBot.x &&
                 point.y >= rightBot.y && point.y <= leftTop.y

@@ -11,20 +11,19 @@ class GridSettings {
     var screenHeight = 0.9f
         private set
 
-    var grid : Array<BooleanArray> = arrayOf(BooleanArray(1))
-        private set
+    var width = 1
+    var height = 1
+
     var occupationGird :  Array<IntArray> =  arrayOf(IntArray(1) {-1})
             private set
 
 
     fun setGrid(width: Int, height: Int) : GridSettings {
-        return setGrid ( Array(height) { BooleanArray(width) { true } } )
-    }
-    fun setGrid(g : Array<BooleanArray>) : GridSettings {
-        grid = g
-        reCalculateAttributes()
+        this.width = width
+        this.height= height
         return this
     }
+
     fun setScreenHeight(height : Float) : GridSettings {
         screenHeight = if(height > 0) height else 0f
         reCalculateAttributes()
@@ -39,16 +38,16 @@ class GridSettings {
         return this
     }
 
-    var borderWidth = (screenHeight * 2 / grid.size) * edgeWidthPercentage
+    var borderWidth = (screenHeight * 2 / height) * edgeWidthPercentage
         private set
-    var blockSize = (screenHeight * 2 / grid.size) - (borderWidth * 2 / grid.size)
+    var blockSize = (screenHeight * 2 /height) - (borderWidth * 2 / height)
         private set
 
     private fun reCalculateAttributes(){
-        val tempValue = screenHeight * 2 / grid.size
+        val tempValue = screenHeight * 2 / height
         borderWidth = tempValue * edgeWidthPercentage //the total width of the wall (no the true visual with, that's borderEdgeWidth - borderSpacing)
-        blockSize = tempValue - (borderWidth * 2 / grid.size) //the size of a cube in the grid
-        occupationGird = Array(grid.size) { IntArray(grid[0].size) {-1} }
+        blockSize = tempValue - (borderWidth * 2 / height) //the size of a cube in the grid
+        occupationGird = Array(height) { IntArray(width) {-1} }
     }
 
 
@@ -58,7 +57,6 @@ class GridSettings {
 
         for(horIndex in leftIndex until leftIndex+comp.width){
             for(verIndex in topIndex until topIndex+comp.height){
-                if(!grid[verIndex][horIndex]) return false
                 if(occupationGird[verIndex][horIndex] != -1) return false
             }
         }
@@ -89,7 +87,7 @@ class GridSettings {
     //todo: these 2 functions dont take in account the transformation of the camera, like scale and translation (as specially the translation is inportant)
 
     fun getGLCLeftTopIndex(gLPos: Vector2f, comp: GridLockedComponent) : Vector2i {
-        val mostLeft = (-blockSize * grid[0].size) / 2
+        val mostLeft = (-blockSize * width) / 2
         val mostTop = screenHeight - borderWidth
         val newLeft = mostLeft + (blockSize/2)*(comp.width-1)
         val newTop = mostTop - (blockSize/2)*(comp.height-1)
@@ -97,13 +95,13 @@ class GridSettings {
 
         val horizontalPercentage = (gridPos.x - newLeft) / (-mostLeft*2)
         val verticalPercentage = (gridPos.y - newTop) / (-mostTop*2)
-        val relativeHorizontalIndex = (horizontalPercentage * grid[0].size +0.00001f).toInt()//this is not the real horizontal index, the amount of indexes gets decided by the amount of possible horizontal arrangement of this size block
-        val relativeVerticalIndex = (verticalPercentage * grid.size  +0.00001f).toInt()      //this is not the real vertical index, the amount of indexes gets decided by the amount of possible vertical arrangement of this size block
+        val relativeHorizontalIndex = (horizontalPercentage * width +0.00001f).toInt()//this is not the real horizontal index, the amount of indexes gets decided by the amount of possible horizontal arrangement of this size block
+        val relativeVerticalIndex = (verticalPercentage * height +0.00001f).toInt()      //this is not the real vertical index, the amount of indexes gets decided by the amount of possible vertical arrangement of this size block
 
         return Vector2i(relativeHorizontalIndex, relativeVerticalIndex)
     }
     fun getGLCGirdTransform(leftTop: Vector2i, comp: GridLockedComponent) : Vector2f {
-        val mostLeft = (-blockSize * grid[0].size) / 2
+        val mostLeft = (-blockSize * width) / 2
         val mostTop = screenHeight - borderWidth
         return Vector2f(mostLeft+ (blockSize/2)*comp.width + blockSize*leftTop.x, mostTop - (blockSize/2)*comp.height - blockSize*leftTop.y)
     }
@@ -116,7 +114,6 @@ class GridSettings {
             }
             visual += "\n"
         }
-
         return visual
     }
 

@@ -19,8 +19,8 @@ class GridMeshGenerator(controller: ECSController, private val settings : GridSe
 
     private fun genGridTheMesh() {
         val zIndex = 1f //the lvl height index of the tiles or something (at least it's not that important because it's the height of only this openMesh, so it's not that important)
-        val height = settings.grid.size
-        val width = settings.grid[0].size
+        val height = settings.height
+        val width = settings.width
 
         val tempPerBlock = settings.screenHeight * 2 / height //temporaryValue
         val borderSpacing = tempPerBlock * edgeSpacingFactor //pure visual, te amount of space between the walls and the tiles

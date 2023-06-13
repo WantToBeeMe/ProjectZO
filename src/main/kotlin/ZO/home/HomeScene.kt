@@ -7,7 +7,7 @@ import base.util.IScene
 import ecs.singletons.Camera
 import ecs.components.TransformComponent
 import ecs.components.mesh.FlatMeshComponent
-import ecs.components.clickBox.CubeClickBox
+import ecs.components.clickBox.RectangleClickBox
 import ecs.components.clickBox.ClickBoxComponent
 import ecs.components.mesh.OpenMeshComponent
 import ecs.components.mesh.customTemplates.FlatCurvedBoxMesh
@@ -45,7 +45,7 @@ class HomeScene : IScene() {
         mesh.setColor(Colors.GRAY_LIGHT.get)
         mesh.create()
         controller.assign<ClickBoxComponent>(buttonID)
-            .addClickBox( CubeClickBox(size.first,size.second) )
+            .addClickBox( RectangleClickBox(size.first,size.second) )
             .setOnRelease() {_,_,_ -> Game.changeScene(InGameScene()) }
     }
 

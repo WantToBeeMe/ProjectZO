@@ -26,11 +26,22 @@ class TransformComponent  {
             return _transform
         }
 
-    fun setPosition(x: Float, y: Float)  : TransformComponent {
-        _position = Vector2f(x, y)
+    fun setPosition(pos : Vector2f): TransformComponent {
+        _position = pos
         transformCreated = false
         return this
     }
+    fun setX(x: Float)  : TransformComponent {
+        _position.x = x
+        transformCreated = false
+        return this
+    }
+    fun setY(y: Float)  : TransformComponent {
+        _position.y = y
+        transformCreated = false
+        return this
+    }
+
     fun setRotation(degrees: Float, inputIsRad: Boolean = false) : TransformComponent {
         _rotation = if(inputIsRad) degrees else Math.toRadians(degrees.toDouble()).toFloat()
         transformCreated = false

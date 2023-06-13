@@ -1,6 +1,7 @@
 package ecs.singletons
 
 import org.joml.Matrix4f
+import org.joml.Vector2f
 import org.joml.Vector3f
 
 
@@ -11,6 +12,7 @@ class Camera {
     private val _viewMatrix : Matrix4f = Matrix4f();
     val  viewMatrix get() = _viewMatrix
 
+    var position = Vector2f()
     private var _aspect = 0f
     val aspect get() = _aspect
     val nearPlane = -1f
@@ -39,11 +41,11 @@ class Camera {
         //projectionMatrix.perspective(1.1f, aspect, 0.2f, 100f);
     }
 
-    private fun generateViewMatrix(position : Vector3f = Vector3f(), direction : Vector3f = Vector3f(0f,0f,-1f)) {
+    private fun generateViewMatrix(direction : Vector3f = Vector3f(0f,0f,-1f)) {
         this._viewMatrix.identity()
         _viewMatrix.lookAt(
-            position, //position standing
-            Vector3f(position).add(direction), //looking at
+            Vector3f(position.x, position.y, 0f), //position standing
+            Vector3f(position.x, position.y, 0f).add(direction), //looking at
             Vector3f(0f, 1f, 0f)  //up direction
         )
     }

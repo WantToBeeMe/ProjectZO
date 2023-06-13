@@ -86,6 +86,9 @@ class ECSController : IImGuiWindow {
                 (ton as Camera).resizeViewPort(width.toFloat(), height.toFloat())
             }
         }
+        for(sys in systems){
+            sys.onWindowResize(width, height)
+        }
     }
     fun start(){
         ImGuiController.addGui(this)

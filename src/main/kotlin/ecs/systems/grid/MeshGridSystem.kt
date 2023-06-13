@@ -3,6 +3,7 @@ package ecs.systems.grid
 import ZO.game.GLCBlock
 import base.input.IMouseClickObserver
 import base.input.Mouse
+import base.util.Colors
 import base.util.Maf
 import ecs.ECSController
 import ecs.singletons.Camera
@@ -10,6 +11,7 @@ import ecs.singletons.GridSettings
 import ecs.components.GridLockedComponent
 import ecs.components.TransformComponent
 import ecs.components.clickBox.ClickBoxComponent
+import ecs.components.clickBox.RectangleClickBox
 import ecs.components.mesh.FlatMeshComponent
 import ecs.components.mesh.customTemplates.FlatCurvedBoxMesh
 import ecs.systems.IEntityComponentSystem
@@ -21,46 +23,85 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
     private const val cornerPercentage : Float = 0.48f
     private const val blockSpacingFactor : Float = 0.05f
 
-    private var shadowGLC : GridLockedComponent? = null
-    private var shadowTransform : TransformComponent? = null
-    private var shadowMesh : FlatMeshComponent? = null
-    private fun createShadow(width: Int, height:Int){
+    private lateinit var shadowGLC : GridLockedComponent
+    private lateinit var shadowTransform : TransformComponent
+    private lateinit var shadowMesh : FlatMeshComponent
+
+    private lateinit var horizontalBarMesh : FlatMeshComponent
+    private lateinit var horizontalBarTransform : TransformComponent
+    private lateinit var horizontalBarClickBox : ClickBoxComponent
+    private var clickBox : RectangleClickBox? = null
+    private fun showShadow(width: Int, height:Int, aspect : Float){
+
         val gridSettings = controller.getSingleton<GridSettings>()
-        val borderWidth = gridSettings.borderWidth
         val blockSize = gridSettings.blockSize
         val perBlockSpacing = blockSize * blockSpacingFactor
-        val camera = controller.getSingleton<Camera>()
-
-        val shadowID = controller.createEntity()
-        shadowMesh = controller.assign<FlatMeshComponent>(shadowID)
-        shadowMesh!!.addMesh(
+        shadowMesh.addMesh(
                 FlatCurvedBoxMesh(
                         Vector2f( -(blockSize/2)*width + perBlockSpacing, (blockSize/2)*height  - perBlockSpacing),
                         Vector2f((blockSize/2)*width - perBlockSpacing, -(blockSize/2)*height  + perBlockSpacing),
-                        borderWidth* 0.48f, 3)
+                        gridSettings.borderWidth* 0.48f, 3)
         )
-        shadowMesh!!.setColor(1f,1f,1f,0.1f).setVisualClickBox(false)
-        shadowMesh!!.create()
-        shadowMesh!!.depth = 0.05f
-        shadowGLC = controller.assign<GridLockedComponent>(shadowID).setWidth(width).setHeight(height)
-        shadowTransform = controller.assign<TransformComponent>(shadowID)
-        val gLMouse = Maf.pixelToGLCords(Mouse.getX(),Mouse.getY(),camera.aspect)
-        val leftTop = gridSettings.getGLCLeftTopIndex(  gLMouse , shadowGLC!!)
-        val transform = gridSettings.getGLCGirdTransform(leftTop , shadowGLC!!)
-        shadowTransform!!.setPosition(transform.x, transform.y)
-
+        shadowMesh.setColor(1f,1f,1f,0.1f).setVisualClickBox(false)
+        shadowMesh.create()
+        shadowMesh.depth = 0.05f
+        shadowGLC.setHeight(height).setWidth(width)
+        val gLMouse = Maf.pixelToGLCords(Mouse.getX(),Mouse.getY(),aspect)
+        val leftTop = gridSettings.getGLCLeftTopIndex(  gLMouse , shadowGLC)
+        val transform = gridSettings.getGLCGirdTransform(leftTop , shadowGLC)
+        shadowTransform.setPosition(transform)
     }
-    fun deleteShadow(){
-        if(shadowTransform == null) return
-        shadowTransform!!.setScale(0f)
-        shadowTransform = null
-        shadowGLC = null
-        shadowMesh!!.clear()
-        shadowMesh = null
+    private fun hideShadow(){
+        shadowMesh.clear()
     }
 
+    private fun horizontalBar(){ //the viewPercentage is the percentage of the screen you can see without moving
+        val barSpacing = 0.02f
+        val barHeight = 0.1f
+
+        val camera = controller.getSingleton<Camera>()
+        val settings = controller.getSingleton<GridSettings>()
+        //calculating the stuff
+        val mostRightPlusBorder = (settings.blockSize * settings.width / 2) + settings.borderWidth + (1-settings.screenHeight)
+        val aspect = camera.aspect
+        horizontalBarMesh.clear()
+        val viewPercentage = aspect/mostRightPlusBorder
+        if(viewPercentage >= 1f) return
+        val bar = Pair(Vector2f( -aspect*viewPercentage + barSpacing, -1f+barHeight - barSpacing ),  Vector2f(aspect*viewPercentage - barSpacing , -1f + barSpacing))
+        //remaking the mesh
+        horizontalBarMesh.addMesh(FlatCurvedBoxMesh(bar.first, bar.second,barHeight*0.2f, 3))
+        horizontalBarMesh.setColor(Colors.GRAY_LIGHT.get)
+        horizontalBarMesh.create()
+        horizontalBarMesh.depth = 1f
+        //remaking the clickBox
+        if(clickBox != null) horizontalBarClickBox.removeClickBox(clickBox!!)
+        clickBox = RectangleClickBox(bar.first, bar.second)
+        horizontalBarClickBox.addClickBox( clickBox!! )
+
+    }
+
+    var horizontalBarStartingX : Float? = null
     override fun create() {
         super.create()
+
+        val shadowID = controller.createEntity()
+        shadowMesh = controller.assign<FlatMeshComponent>(shadowID)
+        shadowGLC = controller.assign<GridLockedComponent>(shadowID).setWidth(1).setHeight(1)
+        shadowTransform = controller.assign<TransformComponent>(shadowID)
+        //this doesn't look to good, I should rework the clickBox + make a viewBox, but still need to think about that
+        // at least the reworking of the clickBox
+        val horizontalBarID = controller.createEntity()
+        horizontalBarMesh = controller.assign<FlatMeshComponent>(horizontalBarID)
+        horizontalBarTransform = controller.assign<TransformComponent>(horizontalBarID)
+        horizontalBarClickBox = controller.assign<ClickBoxComponent>(horizontalBarID)
+        horizontalBarClickBox.setWhileClick { _,realMousePos ->
+            if(horizontalBarStartingX == null) horizontalBarStartingX = -realMousePos.x + horizontalBarTransform.getPosition().x
+            horizontalBarTransform.setX(realMousePos.x + horizontalBarStartingX!! )
+        }
+        horizontalBarClickBox.setOnRelease {_,_,_ -> horizontalBarStartingX = null }
+        horizontalBarClickBox.setOnLeave() {_,_ -> horizontalBarStartingX = null }
+        horizontalBar()
+
         val gridSettings = controller.getSingleton<GridSettings>()
         GridMeshGenerator(controller, gridSettings, edgeSpacingFactor,cornerPercentage,blockSpacingFactor)
         GLCBlock(controller,2,2, gridSettings, blockSpacingFactor)
@@ -86,13 +127,13 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
         val gridSettings = controller.getSingleton<GridSettings>()
         val camera = controller.getSingleton<Camera>()
         val gLMouse = Maf.pixelToGLCords(Mouse.getX(),Mouse.getY(),camera.aspect)
-        holding!!.second.first.setPosition(gLMouse.x,gLMouse.y)
-        val leftTop = gridSettings.getGLCLeftTopIndex(  gLMouse , shadowGLC!!)
-        val transform = gridSettings.getGLCGirdTransform(leftTop , shadowGLC!!)
-        shadowTransform!!.setPosition(transform.x, transform.y)
-        if(gridSettings.canAddGLC(shadowGLC!!,leftTop.x, leftTop.y))
-            shadowMesh!!.setColor(1f,1f,1f,0.1f)
-        else shadowMesh!!.setColor(1f,0f,0f,0.1f)
+        holding!!.second.first.setPosition(gLMouse)
+        val leftTop = gridSettings.getGLCLeftTopIndex(  gLMouse , shadowGLC)
+        val transform = gridSettings.getGLCGirdTransform(leftTop , shadowGLC)
+        shadowTransform.setPosition(transform)
+        if(gridSettings.canAddGLC(shadowGLC,leftTop.x, leftTop.y))
+            shadowMesh.setColor(1f,1f,1f,0.1f)
+        else shadowMesh.setColor(1f,0f,0f,0.1f)
 
     }
 
@@ -107,7 +148,7 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
                 holding = Pair(gLCKey,gLComponent)
                 oldIndex = gridSettings.removeGLC(gLCKey)
                 gLComponent.first.setScale(0.9f)
-                createShadow(gLComponent.third.width, gLComponent.third.height)
+                showShadow(gLComponent.third.width, gLComponent.third.height, camera.aspect)
                 break
             }
         }
@@ -122,25 +163,26 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
         if(gridSettings.canAddGLC(GLC,leftTop.x, leftTop.y)){
             gridSettings.addGLC( holding!!.first, GLC,leftTop.x, leftTop.y  )
             val transform = gridSettings.getGLCGirdTransform(leftTop , GLC)
-            holding!!.second.first.setPosition(transform.x, transform.y)
+            holding!!.second.first.setPosition(transform)
            // val gridPos = gridSettings.getGLCGirdTransform(gLMouse, GLC)
 
         }
         else if(oldIndex.x != -1 && gridSettings.canAddGLC(GLC,oldIndex.x, oldIndex.y)) {
             val transform = gridSettings.getGLCGirdTransform(oldIndex , GLC)
-            holding!!.second.first.setPosition(transform.x, transform.y)
+            holding!!.second.first.setPosition(transform)
             gridSettings.addGLC( holding!!.first, GLC,oldIndex.x, oldIndex.y  )
         }
         else{
             return //returning early because you it cant be placed
             //idk what to do here yet
         }
-        deleteShadow()
+        hideShadow()
         holding!!.second.first.setScale(1f)
         holding = null
     }
 
-
-
-    //gLCBlock = GLCBlock(controller,2,4, gridSettings, blockSpacingFactor)
+    override fun onWindowResize(width: Int, height: Int) {
+        super.onWindowResize(width, height)
+        horizontalBar()
+    }
 }

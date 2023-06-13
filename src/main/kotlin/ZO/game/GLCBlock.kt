@@ -6,7 +6,7 @@ import ecs.singletons.GridSettings
 import ecs.components.GridLockedComponent
 import ecs.components.TransformComponent
 import ecs.components.clickBox.ClickBoxComponent
-import ecs.components.clickBox.CubeClickBox
+import ecs.components.clickBox.RectangleClickBox
 import ecs.components.mesh.FlatMeshComponent
 import ecs.components.mesh.customTemplates.FlatCurvedBoxMesh
 import org.joml.Vector2f
@@ -34,7 +34,7 @@ class GLCBlock(controller :ECSController, width:Int, height: Int, gridSettings :
         blockMesh.depth = 0.1f
         transform = controller.assign<TransformComponent>(id)
         GLC = controller.assign<GridLockedComponent>(id).setWidth(width).setHeight(height)
-        controller.assign<ClickBoxComponent>(id).addClickBox( CubeClickBox( Vector2f( -(blockSize/2)*width + perBlockSpacing, (blockSize/2)*height  - perBlockSpacing),
+        controller.assign<ClickBoxComponent>(id).addClickBox( RectangleClickBox( Vector2f( -(blockSize/2)*width + perBlockSpacing, (blockSize/2)*height  - perBlockSpacing),
                                                                             Vector2f((blockSize/2)*width - perBlockSpacing, -(blockSize/2)*height  + perBlockSpacing)) )
     }
 

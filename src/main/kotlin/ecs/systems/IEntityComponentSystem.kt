@@ -17,5 +17,6 @@ abstract class IEntityComponentSystem() {
     open fun stop(){}
     open fun update(dt: Float){}
     open fun guiOptions() {}
+    open fun onWindowResize(width : Int, height: Int) {}
 
 }
