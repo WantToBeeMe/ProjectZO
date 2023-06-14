@@ -7,6 +7,7 @@ open class IScene {
 
     open fun start(){
         controller.start()
+        controller.onWindowResize(Window.getWidth(), Window.getHeight())
     }
 
     open fun loop(dt : Float){
