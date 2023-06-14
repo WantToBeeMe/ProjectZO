@@ -1,5 +1,6 @@
 package ZO.home
 
+import ZO.game.InGameScene
 import ZO.interactiveTest.InteractScene
 import base.util.Colors
 import base.util.Game
@@ -31,22 +32,12 @@ class HomeScene : IScene() {
             ClickBoxComponent::class,
             )
 
-        genBackground()
+        genOtherStuff()
     }
 
-    private fun genBackground(){
-        val height = 0.2f
-        val width = 0.8f
-        val size = Pair(Vector2f(-width/2,height/2),Vector2f(width/2,-height/2))
-
-        val buttonID = controller.createEntity()
-        val mesh = controller.assign<FlatMeshComponent>(buttonID)
-        mesh.addMesh(FlatCurvedBoxMesh(size.first,size.second,0.025f ))
-        mesh.setColor(Colors.GRAY_LIGHT.get)
-        mesh.create()
-        controller.assign<ClickBoxComponent>(buttonID)
-            .addClickBox( RectangleClickBox(size.first,size.second) )
-            .setOnRelease {_,_ -> Game.changeScene(InteractScene()) }
+    private fun genOtherStuff(){
+        val b = Button(controller,0.8f,0.2f ) {_,_ -> Game.changeScene(InteractScene())}
+        b.transform.setRotation(20f)
     }
 
 }

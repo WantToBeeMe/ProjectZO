@@ -1,5 +1,8 @@
 package ZO.interactiveTest
 
+import ZO.game.InGameScene
+import ZO.home.Button
+import base.util.Game
 import base.util.IScene
 import ecs.components.TransformComponent
 import ecs.components.clickBox.ClickBoxComponent
@@ -24,12 +27,15 @@ class InteractScene : IScene() {
             OpenMeshComponent::class,
             ClickBoxComponent::class,
         )
-
-        genBackground()
+        genOtherStuff()
     }
 
-    private fun genBackground(){
-        Button(controller,0.8f,0.2f )
+    private fun genOtherStuff(){
+        val bl = Button(controller,1.2f,1.6f ) {_,_ -> Game.changeScene(InGameScene())}
+        val bm = Button(controller,1.2f,1.6f ) {_,_ -> Game.changeScene(InGameScene())}
+        val br = Button(controller,1.2f,1.6f ) {_,_ -> Game.changeScene(InGameScene())}
+        bl.transform.setX(-1.4f)
+        br.transform.setX(1.4f)
     }
 
 

@@ -32,8 +32,6 @@ class InGameScene : IScene() {
                 ClickBoxComponent::class,
                 GridLockedComponent::class,
         )
-
     }
-
 }
 

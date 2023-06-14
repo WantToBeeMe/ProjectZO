@@ -7,18 +7,13 @@ uniform mat4 uView;
 uniform vec4 uColor;
 uniform float uDepth;
 uniform mat3 uTransform;
-uniform int uInteract;
 
 out vec4 fColor;
 out vec2 fPos;
 
 void main(){
-    if (uInteract == 1) {
-        float tint = (uColor.r + uColor.g + uColor.b)/3.5;
-        fColor = uColor + vec4(tint,tint,tint, 0.0);
-    } else {
-        fColor = uColor;
-    }
+
+    fColor = uColor;
     fPos = aPos;
     // Apply 2D transformation to the vertex position
     vec3 transformedPos = vec3(uTransform * vec3(aPos.xy, 1.0));
