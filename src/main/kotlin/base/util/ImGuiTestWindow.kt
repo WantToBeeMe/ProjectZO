@@ -1,7 +1,5 @@
-package ZO
+package base.util
 
-import base.util.IImGuiWindow
-import base.util.ImGuiController
 import imgui.ImBool
 import imgui.ImGui
 import imgui.ImString
@@ -11,6 +9,7 @@ import imgui.enums.ImGuiCond
 import imgui.enums.ImGuiInputTextFlags
 import imgui.enums.ImGuiMouseCursor
 
+//this is a test window given by ImGui to test if it works, or to show you what's possible
 class ImGuiTestWindow : IImGuiWindow {
 
     //for the custom window
