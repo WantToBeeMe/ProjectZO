@@ -1,6 +1,5 @@
 package ZO.home
 
-import ZO.game.InGameScene
 import ZO.interactiveTest.InteractScene
 import base.util.Colors
 import base.util.Game
@@ -47,7 +46,7 @@ class HomeScene : IScene() {
         mesh.create()
         controller.assign<ClickBoxComponent>(buttonID)
             .addClickBox( RectangleClickBox(size.first,size.second) )
-            .setOnRelease() {_,_,_ -> Game.changeScene(InteractScene()) }
+            .setOnRelease {_,_ -> Game.changeScene(InteractScene()) }
     }
 
 }

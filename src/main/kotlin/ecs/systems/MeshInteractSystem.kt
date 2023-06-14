@@ -2,31 +2,25 @@ package ecs.systems
 
 import base.input.IMouseClickObserver
 import base.input.Mouse
-import base.shader.Shader
-import base.shader.ShaderObject
 import base.util.Maf
 import ecs.ECSController
 import ecs.singletons.Camera
 import ecs.components.TransformComponent
 import ecs.components.clickBox.ClickBoxComponent
 import ecs.components.mesh.FlatMeshComponent
-import imgui.ImBool
-import imgui.ImGui
 import org.joml.Vector2f
-import org.joml.Vector4f
+import kotlin.math.cos
+import kotlin.math.sin
 
-object MeshInteractSystem : IEntityComponentSystem() , IMouseClickObserver{
-    private val currentShader : ShaderObject = Shader.FLAT_OBJECT.get()
-    private val noTransform =  TransformComponent().transform
-    private val showClickBox = ImBool(false)
+object MeshInteractSystem : IEntityComponentSystem(), IMouseClickObserver {
 
-    override fun stop() {
-        super.stop()
-        Mouse.unSubscribe(this)
-    }
     override fun start(controller: ECSController) {
         super.start(controller)
         Mouse.subscribe(this)
+    }
+    override fun stop() {
+        super.stop()
+        Mouse.unSubscribe(this)
     }
 
     override fun update(dt: Float) {
@@ -34,65 +28,19 @@ object MeshInteractSystem : IEntityComponentSystem() , IMouseClickObserver{
         val transforms = controller.getComponents<TransformComponent>()
         val flatClickBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, ClickBoxComponent>()
         val camera = controller.getSingleton<Camera>()
-
-        val mouseX = Mouse.getX()
-        val mouseY = Mouse.getY()
-        val realMousePos = Maf.pixelToGLCords(mouseX,mouseY,camera.aspect)//getRealMousePosition(mouseX.toDouble(), mouseY.toDouble())
+        val realMousePos = Maf.pixelToGLCords(Mouse.getX(),Mouse.getY(),camera.aspect)
 
         for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
-            //val transformedMousePos = transformPoint()
-            if (clickBoxMesh.second.isInside(realMousePos, transforms[entityID])) {
-                if (clickBoxMesh.first.clickBoxInteract == 1) {
-                    clickBoxMesh.second.whileHoverEvent?.let { it(Vector2f(mouseX, mouseY), realMousePos) }
-                } else {
-                    clickBoxMesh.second.onEnterEvent?.let { it(Vector2f(mouseX, mouseY), realMousePos) }
-                    clickBoxMesh.first.clickBoxInteract = 1
+            val transformedMousePos = Maf.revertTransform(realMousePos, transforms[entityID])
+            if (clickBoxMesh.second.isInside( transformedMousePos )) {
+                if (!clickBoxMesh.second.hovering) {
+                    clickBoxMesh.second.hovering = true
+                    clickBoxMesh.second.onEnterEvent?.let { it(realMousePos) }
                 }
-                if (clickBoxMesh.second.hold) {
-                    clickBoxMesh.second.whileClickEvent?.let { it(Vector2f(mouseX, mouseY), realMousePos) }
-                    clickBoxMesh.first.clickBoxInteract = 2
-                }
-            } else if (clickBoxMesh.first.clickBoxInteract != 0) {
-                clickBoxMesh.second.hold = false
-                clickBoxMesh.second.onLeaveEvent?.let { it(Vector2f(mouseX, mouseY), realMousePos) }
-                clickBoxMesh.first.clickBoxInteract = 0
+            } else if (clickBoxMesh.second.hovering) {
+                clickBoxMesh.second.hovering = false
+                clickBoxMesh.second.onLeaveEvent?.let { it(realMousePos) }
             }
-        }
-
-        if(showClickBox.get()){
-
-            currentShader.use()
-            currentShader.enableBlend()
-            currentShader.enableDepthTest()
-            currentShader.uploadMat4f("uProjection", camera.projectionMatrix )
-            currentShader.uploadMat4f("uView",camera.viewMatrix)
-            currentShader.uploadMat3f("uTransform", noTransform)
-            currentShader.uploadFloat("uDepth", 1f)
-            currentShader.uploadInt("uInteract", 0)
-
-            for((entityID, clickBoxMesh) in flatClickBoxMeshes){
-                if(!clickBoxMesh.second.showDebugLines) continue
-                currentShader.uploadVec4f("uColor", Vector4f(1f,1f,clickBoxMesh.first.clickBoxInteract.toFloat(),1f))
-                clickBoxMesh.second.renderClickBox()
-                //tranform hasbeen moved to the ClickBoxComp. so that doesnt work here anymore
-               //val transformedMousePos  = ClickBoxComponent.transformPoint(realMousePos, transforms[entityID])
-               //currentShader.uploadVec4f("uColor", Vector4f(1f,0f,1f,1f))
-               //MouseClickBoxVisualizer.renderMouse(transformedMousePos.x, transformedMousePos.y)
-            }
-
-            currentShader.detach()
-        }
-    }
-
-
-
-
-
-
-    override fun guiOptions() {
-        if (ImGui.beginTabItem("ClickBox" )) {
-            ImGui.checkbox("Show ClickBoxes",showClickBox)
-            ImGui.endTabItem();
         }
     }
 
@@ -103,12 +51,9 @@ object MeshInteractSystem : IEntityComponentSystem() , IMouseClickObserver{
         val realMousePos = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),camera.aspect)
 
         for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
-            if (clickBoxMesh.second.onClickEvent == null && clickBoxMesh.second.whileClickEvent == null) continue
-            //val transformedMousePos = transformPoint(realMousePos, transforms[entityID])
-            if (clickBoxMesh.second.isInside(realMousePos, transforms[entityID])) {
-                clickBoxMesh.second.onClickEvent?.let { it(Vector2f(xPos.toFloat(), yPos.toFloat()), realMousePos, button) }
-                clickBoxMesh.second.hold = true
-            }
+            val transformedMousePos = Maf.revertTransform(realMousePos, transforms[entityID])
+            if (clickBoxMesh.second.isInside(transformedMousePos))
+                clickBoxMesh.second.onClickEvent?.let { it(realMousePos, button) }
         }
     }
 
@@ -119,14 +64,9 @@ object MeshInteractSystem : IEntityComponentSystem() , IMouseClickObserver{
         val realMousePos = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),camera.aspect)
 
         for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
-            if (clickBoxMesh.second.onReleaseEvent == null && clickBoxMesh.second.whileClickEvent == null) continue
-            //val transformedMousePos = transformPoint(realMousePos, transforms[entityID])
-            if (clickBoxMesh.second.isInside(realMousePos, transforms[entityID])) {
-                clickBoxMesh.second.onReleaseEvent?.let { it(Vector2f(xPos.toFloat(), yPos.toFloat()), realMousePos, button) }
-                clickBoxMesh.second.hold = false
-            }
+            val transformedMousePos = Maf.revertTransform(realMousePos, transforms[entityID])
+            if (clickBoxMesh.second.isInside(transformedMousePos))
+                clickBoxMesh.second.onReleaseEvent?.let { it(realMousePos, button) }
         }
     }
-
-
 }

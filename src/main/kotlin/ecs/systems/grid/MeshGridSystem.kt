@@ -17,6 +17,8 @@ import ecs.components.mesh.customTemplates.FlatCurvedBoxMesh
 import ecs.systems.IEntityComponentSystem
 import org.joml.Vector2f
 import org.joml.Vector2i
+import kotlin.math.cos
+import kotlin.math.sin
 
 object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
     private const val edgeSpacingFactor: Float = 0.08f
@@ -94,12 +96,12 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
         horizontalBarMesh = controller.assign<FlatMeshComponent>(horizontalBarID)
         horizontalBarTransform = controller.assign<TransformComponent>(horizontalBarID)
         horizontalBarClickBox = controller.assign<ClickBoxComponent>(horizontalBarID)
-        horizontalBarClickBox.setWhileClick { _,realMousePos ->
-            if(horizontalBarStartingX == null) horizontalBarStartingX = -realMousePos.x + horizontalBarTransform.getPosition().x
-            horizontalBarTransform.setX(realMousePos.x + horizontalBarStartingX!! )
-        }
-        horizontalBarClickBox.setOnRelease {_,_,_ -> horizontalBarStartingX = null }
-        horizontalBarClickBox.setOnLeave() {_,_ -> horizontalBarStartingX = null }
+        //horizontalBarClickBox.setWhileClick { _,realMousePos ->
+        //    if(horizontalBarStartingX == null) horizontalBarStartingX = -realMousePos.x + horizontalBarTransform.getPosition().x
+        //    horizontalBarTransform.setX(realMousePos.x + horizontalBarStartingX!! )
+        //}
+        //horizontalBarClickBox.setOnRelease {_,_,_ -> horizontalBarStartingX = null }
+        //horizontalBarClickBox.setOnLeave() {_,_ -> horizontalBarStartingX = null }
         horizontalBar()
 
         val gridSettings = controller.getSingleton<GridSettings>()
@@ -144,7 +146,7 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
         val camera = controller.getSingleton<Camera>()
         val gLMouse = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),camera.aspect)
         for((gLCKey, gLComponent) in gLComponents){
-            if(gLComponent.second.isInside(gLMouse,gLComponent.first)){
+            if(gLComponent.second.isInside(Maf.revertTransform(gLMouse,gLComponent.first))){
                 holding = Pair(gLCKey,gLComponent)
                 oldIndex = gridSettings.removeGLC(gLCKey)
                 gLComponent.first.setScale(0.9f)
@@ -185,4 +187,5 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
         super.onWindowResize(width, height)
         horizontalBar()
     }
+
 }
