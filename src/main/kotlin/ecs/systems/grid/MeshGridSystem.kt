@@ -50,37 +50,6 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
         shadowMesh.clear()
     }
 
-
-    private lateinit var horizontalBarMesh : FlatMeshComponent
-    private lateinit var horizontalBarTransform : TransformComponent
-    private lateinit var horizontalBarClickBox : ClickBoxComponent
-    private var horizontalBarClickBoxComp : RectangleClickBox? = null
-    private var horizontalBarStartingX : Float? = null
-    private fun horizontalBar(){ //the viewPercentage is the percentage of the screen you can see without moving
-        val barSpacing = 0.02f
-        val barHeight = 0.1f
-        val gridSettings = controller.getSingleton<GridSettings>()
-        val camera = controller.getSingleton<Camera>()
-        //calculating the stuff
-        val mostRightPlusBorder = (gridSettings.blockSize * gridSettings.width / 2) + gridSettings.borderWidth + (1-gridSettings.screenHeight)
-        val aspect = camera.aspect
-        horizontalBarMesh.clear()
-        camera.position = Vector2f()
-        horizontalBarTransform.setX(0f)
-        val viewPercentage = aspect/mostRightPlusBorder
-        if(viewPercentage >= 1f) return
-        val bar = Pair(Vector2f( -aspect*viewPercentage + barSpacing, -1f+barHeight - barSpacing ),  Vector2f(aspect*viewPercentage - barSpacing , -1f + barSpacing))
-        //remaking the mesh
-        horizontalBarMesh.addMesh(FlatCurvedBoxMesh(bar.first, bar.second,barHeight*0.2f, 3))
-        horizontalBarMesh.setColor( Colors.CYAN.get)
-        horizontalBarMesh.create()
-        horizontalBarMesh.depth = 1f
-        //remaking the clickBox
-        if(horizontalBarClickBoxComp != null) horizontalBarClickBox.removeClickBox(horizontalBarClickBoxComp!!)
-        horizontalBarClickBoxComp = RectangleClickBox(bar.first, bar.second)
-        horizontalBarClickBox.addClickBox( horizontalBarClickBoxComp!! )
-    }
-
     override fun create() {
         super.create()
 
@@ -88,18 +57,6 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
         shadowMesh = controller.assign<FlatMeshComponent>(shadowID)
         shadowGLC = controller.assign<GridLockedComponent>(shadowID).setWidth(1).setHeight(1)
         shadowTransform = controller.assign<TransformComponent>(shadowID)
-
-        val defaultColor = Colors.CYAN.get
-        val tint = (defaultColor.x + defaultColor.y + defaultColor.z)/5.5f;
-        val horizontalBarID = controller.createEntity()
-        horizontalBarMesh = controller.assign<FlatMeshComponent>(horizontalBarID)
-        horizontalBarTransform = controller.assign<TransformComponent>(horizontalBarID)
-        horizontalBarClickBox = controller.assign<ClickBoxComponent>(horizontalBarID)
-        horizontalBarClickBox.setOnClick { mousePos,_ -> horizontalBarStartingX = -mousePos.x + horizontalBarTransform.getPosition().x } // horizontalBarTransform.setX(realMousePos.x + horizontalBarStartingX!!
-        horizontalBarClickBox.setOnEnter {_ -> horizontalBarMesh.setColor(Vector4f(tint,tint,tint,0f).add(defaultColor)) }
-        horizontalBarClickBox.setOnLeave {_ -> horizontalBarMesh.setColor(defaultColor) }
-
-        horizontalBar()
 
         val gridSettings = controller.getSingleton<GridSettings>()
         GridMeshGenerator(controller, gridSettings, edgeSpacingFactor,cornerPercentage,blockSpacingFactor)
@@ -126,16 +83,6 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
         val gridSettings = controller.getSingleton<GridSettings>()
         val gLMouse = Maf.pixelToGLCords(Mouse.getX(),Mouse.getY(),camera.aspect)
 
-        if(horizontalBarStartingX != null){
-            val mostRightPlusBorder = (gridSettings.blockSize * gridSettings.width / 2) + gridSettings.borderWidth + (1-gridSettings.screenHeight)
-            val maxMovement = camera.aspect - ((camera.aspect/mostRightPlusBorder) * camera.aspect)
-            val newProgress = (maxMovement + (gLMouse.x + horizontalBarStartingX!!)) / (maxMovement * 2) // 0 to 1
-            if(newProgress in 0.0..1.0) horizontalBarTransform.setX(gLMouse.x + horizontalBarStartingX!!)
-            else if(newProgress > 1) horizontalBarTransform.setX(maxMovement)
-            else horizontalBarTransform.setX(-maxMovement)
-
-            //camera.position()
-        }
         if(holding == null) return
         holding!!.second.first.setPosition(gLMouse)
         val leftTop = gridSettings.getGLCLeftTopIndex(  gLMouse , shadowGLC)
@@ -144,7 +91,6 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
         if(gridSettings.canAddGLC(shadowGLC,leftTop.x, leftTop.y))
             shadowMesh.setColor(1f,1f,1f,0.1f)
         else shadowMesh.setColor(1f,0f,0f,0.1f)
-
     }
 
     override fun onMouseClick(xPos: Double, yPos: Double, button: Int) {
@@ -165,7 +111,6 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
     }
 
     override fun onMouseRelease(xPos: Double, yPos: Double, button: Int) {
-        horizontalBarStartingX = null
         if(holding == null) return
         val gridSettings = controller.getSingleton<GridSettings>()
         val GLC = holding!!.second.third
@@ -194,7 +139,6 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
 
     override fun onWindowResize(width: Int, height: Int) {
         super.onWindowResize(width, height)
-        horizontalBar()
     }
 
 }
