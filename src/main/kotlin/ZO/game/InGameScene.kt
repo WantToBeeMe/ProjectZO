@@ -17,7 +17,7 @@ class InGameScene : IScene() {
 
     init {
         controller.addSingleton(Camera())
-        controller.addSingleton(GridSettings().setGrid(16, 10).setScreenHeight(0.9f).setEdgeWidthPercentage(0.3f))
+        controller.addSingleton(GridSettings().setGrid(16, 10).setScale(0.9f).setBorderWidthPercentage(0.3f))
 
         controller.setSystems(
                 MeshInteractSystem,

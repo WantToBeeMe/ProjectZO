@@ -11,7 +11,7 @@ import ecs.components.mesh.FlatMeshComponent
 import ecs.components.mesh.customTemplates.FlatCurvedBoxMesh
 import org.joml.Vector2f
 
-class GLCBlock(controller :ECSController, width:Int, height: Int, gridSettings : GridSettings, blockSpacingFactor : Float) {
+class GLCBlock(controller :ECSController, width:Int, height: Int, gridSettings : GridSettings) {
     val GLC : GridLockedComponent
     val transform : TransformComponent
     val id : Int
@@ -19,7 +19,7 @@ class GLCBlock(controller :ECSController, width:Int, height: Int, gridSettings :
     init{
         val borderWidth = gridSettings.borderWidth
         val blockSize = gridSettings.blockSize
-        val perBlockSpacing = blockSize * blockSpacingFactor
+        val perBlockSpacing = blockSize * gridSettings.blockSpacingFactor
 
         id = controller.createEntity()
         val blockMesh = controller.assign<FlatMeshComponent>(id)
