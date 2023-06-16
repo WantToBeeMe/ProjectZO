@@ -20,9 +20,9 @@ class GridSettings {
 
     private var occupationGird :  Array<IntArray> =  arrayOf(IntArray(1) {-1})
 
-    var borderWidth = (scale * 2 / gridHeight) * borderWidthPercentage
+    var borderWidth = (2f / gridHeight) * borderWidthPercentage
         private set
-    var blockSize = (scale * 2 /gridHeight) - (borderWidth * 2 / gridHeight)
+    var blockSize = (2f /gridHeight) - (borderWidth * 2 / gridHeight)
         private set
 
     fun setGrid(width: Int, height: Int) : GridSettings {
@@ -46,7 +46,7 @@ class GridSettings {
     }
 
     private fun reCalculateAttributes(){
-        val tempValue = scale * 2 / gridHeight
+        val tempValue = 2f / gridHeight
         borderWidth = tempValue * borderWidthPercentage //the total width of the wall (no the true visual with, that's borderEdgeWidth - borderSpacing)
         blockSize = tempValue - (borderWidth * 2 / gridHeight) //the size of a cube in the grid
         occupationGird = Array(gridHeight) { IntArray(gridWidth) {-1} }

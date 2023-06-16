@@ -26,7 +26,7 @@ class GridLockedComponent {
 
     fun getGLCLeftTopIndex(gLMousePos: Vector2f, gridSettings : GridSettings) : Vector2i {
         val mostLeft = (-gridSettings.blockSize * gridSettings.gridWidth) / 2
-        val mostTop = gridSettings.scale - gridSettings.borderWidth
+        val mostTop = 1f - gridSettings.borderWidth
         val newLeft = mostLeft + (gridSettings.blockSize/2)*(width-1)
         val newTop = mostTop - (gridSettings.blockSize/2)*(height-1)
         val gridPos = Vector2f( Maf.clamp(gLMousePos.x , newLeft, -newLeft- gridSettings.blockSize), Maf.clamp(gLMousePos.y , -newTop + gridSettings.blockSize, newTop) )
@@ -40,7 +40,7 @@ class GridLockedComponent {
     }
     fun getGLCGirdTransform(leftTopIndex: Vector2i, gridSettings : GridSettings) : Vector2f {
         val mostLeft = (-gridSettings.blockSize * gridSettings.gridWidth) / 2
-        val mostTop = gridSettings.scale - gridSettings.borderWidth
+        val mostTop = 1f - gridSettings.borderWidth
         return Vector2f(mostLeft+ (gridSettings.blockSize/2)*width + gridSettings.blockSize*leftTopIndex.x, mostTop - (gridSettings.blockSize/2)*height - gridSettings.blockSize*leftTopIndex.y)
     }
 

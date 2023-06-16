@@ -17,7 +17,7 @@ import org.joml.Vector2f
 class GridMeshGenerator(controller: ECSController) {
     private val gridBackgroundID = controller.createEntity()
     private val gridBackgroundMesh = controller.assign<OpenMeshComponent>(gridBackgroundID)
-    //private val gridBackgroundTransform = controller.assign<TransformComponent>(gridBackgroundID)
+    private val gridBackgroundTransform = controller.assign<TransformComponent>(gridBackgroundID)
 
     private val shadowID = controller.createEntity()
     private val shadowMesh = controller.assign<FlatMeshComponent>(shadowID)
@@ -57,11 +57,12 @@ class GridMeshGenerator(controller: ECSController) {
     }
 
     fun generateGridBackground() {
+        gridBackgroundTransform.setScale(gridSettings.scale)
         val zIndex = 1f //the lvl height index of the tiles or something (at least it's not that important because it's the height of only this openMesh, so it's not that important)
         val height = gridSettings.gridHeight
         val width = gridSettings.gridWidth
 
-        val tempPerBlock = gridSettings.scale * 2 / height //temporaryValue
+        val tempPerBlock =  2f / height //temporaryValue
         val borderSpacing = tempPerBlock * gridSettings.edgeSpacingFactor //pure visual, te amount of space between the walls and the tiles
         val borderWidth = gridSettings.borderWidth  //the total width of the wall (no the true visual with, that's borderEdgeWidth - borderSpacing)
         val blockSize = gridSettings.blockSize      //the size of a cube in the grid
@@ -70,7 +71,7 @@ class GridMeshGenerator(controller: ECSController) {
         val perBlockSpacing = blockSize * gridSettings.blockSpacingFactor  //pure visual, the amount that the background will show through on the edge of every tile
 
         val mostRight = blockSize * width / 2
-        val mostTop = gridSettings.scale - borderWidth
+        val mostTop = 1f - borderWidth
         val cornerRadius =
             if (borderWidth * gridSettings.cornerPercentage > borderWidth - borderSpacing) borderWidth - borderSpacing else borderWidth * gridSettings.cornerPercentage
         val nonRadBorder = borderWidth - cornerRadius
