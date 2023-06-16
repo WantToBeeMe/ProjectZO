@@ -20,7 +20,7 @@ class InGameScene : IScene() {
 
     init {
         controller.addSingleton(Camera())
-        controller.addSingleton(GridSettings().setGrid(17, 10).setScale(0.6f).setBorderWidthPercentage(0.3f).setViewBox(viewBox.first, viewBox.second).setLocKYaxis(true))
+        controller.addSingleton(GridSettings().setGrid(17, 10).setScale(1.6f).setBorderWidthPercentage(0.3f).setViewBox(viewBox.first, viewBox.second).setLocKYaxis(true))
 
         controller.setSystems(
                 MeshInteractSystem,

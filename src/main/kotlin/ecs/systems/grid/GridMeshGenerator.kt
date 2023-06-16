@@ -31,8 +31,8 @@ class GridMeshGenerator(controller: ECSController) {
         val perBlockSpacing = blockSize * gridSettings.blockEdgeShortening
         shadowMesh.addMesh(
             FlatCurvedBoxMesh(
-                Vector2f( -(blockSize/2)*width * gridSettings.zoom + perBlockSpacing, (blockSize/2)*height * gridSettings.zoom - perBlockSpacing),
-                Vector2f((blockSize/2)*width * gridSettings.zoom - perBlockSpacing, -(blockSize/2)*height * gridSettings.zoom + perBlockSpacing),
+                Vector2f( -(blockSize/2)*width+ perBlockSpacing, (blockSize/2)*height - perBlockSpacing),
+                Vector2f((blockSize/2)*width - perBlockSpacing, -(blockSize/2)*height + perBlockSpacing),
                 gridSettings.borderWidth* 0.48f, 3)
         )
         shadowMesh.setColor(1f,1f,1f,0.1f)
@@ -45,7 +45,7 @@ class GridMeshGenerator(controller: ECSController) {
         shadowMesh.clear()
     }
     fun showShadow(gLMouse : Vector2f){
-        shadowTransform.setScale(1f)
+        shadowTransform.setScale(gridSettings.zoom)
         val leftTop = shadowGLC.getGLCLeftTopIndex(gLMouse, gridSettings)
         val transform = shadowGLC.getGLCGirdTransform(leftTop, gridSettings)
         shadowTransform.setPosition(transform)

@@ -30,9 +30,9 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
         gridMeshGenerator = GridMeshGenerator(controller).setSettings(gridSettings)
         gridMeshGenerator.generateGridBackground()
 
-       // GLCBlock(controller,1,1, gridSettings)
-       GLCBlock(controller,2,2, gridSettings)
-       // GLCBlock(controller,3,4, gridSettings)
+        GLCBlock(controller,1,1, gridSettings)
+        GLCBlock(controller,2,2, gridSettings)
+        GLCBlock(controller,3,4, gridSettings)
        // GLCBlock(controller,3,2, gridSettings)
        // GLCBlock(controller,4,3, gridSettings)
        // GLCBlock(controller,2,4, gridSettings)
@@ -69,7 +69,7 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
             if(gLComponent.second.isInside(Maf.revertTransform(gLMouse,gLComponent.first))){
                 holding = Pair(gLCKey,gLComponent)
                 oldIndex = gridSettings.removeGLC(gLCKey)
-                gLComponent.first.setScale(0.9f)
+                gLComponent.first.setScale(gridSettings.zoom * 0.9f)
                 gridMeshGenerator.createShadow(gLComponent.third)
                 break
             }
@@ -99,7 +99,7 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
             //idk what to do here yet
         }
         gridMeshGenerator.hideShadow()
-        holding!!.second.first.setScale(1f)
+        holding!!.second.first.setScale(gridSettings.zoom)
         holding = null
     }
 
