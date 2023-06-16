@@ -30,11 +30,12 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
         gridMeshGenerator = GridMeshGenerator(controller).setSettings(gridSettings)
         gridMeshGenerator.generateGridBackground()
 
+        GLCBlock(controller,1,1, gridSettings)
         GLCBlock(controller,2,2, gridSettings)
         GLCBlock(controller,3,4, gridSettings)
-        GLCBlock(controller,3,2, gridSettings)
-        GLCBlock(controller,4,3, gridSettings)
-        GLCBlock(controller,2,4, gridSettings)
+       // GLCBlock(controller,3,2, gridSettings)
+       // GLCBlock(controller,4,3, gridSettings)
+       // GLCBlock(controller,2,4, gridSettings)
     }
     override fun stop() {
         super.stop()

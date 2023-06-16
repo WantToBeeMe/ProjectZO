@@ -1,8 +1,6 @@
 package ecs.systems.grid
 
-import base.input.Mouse
 import base.util.Colors
-import base.util.Maf
 import ecs.ECSController
 import ecs.components.GridLockedComponent
 import ecs.components.TransformComponent
@@ -30,11 +28,11 @@ class GridMeshGenerator(controller: ECSController) {
         val width = glc.width
         val height = glc.height
         val blockSize = gridSettings.blockSize
-        val perBlockSpacing = blockSize * gridSettings.blockSpacingFactor
+        val perBlockSpacing = blockSize * gridSettings.blockEdgeShortening
         shadowMesh.addMesh(
             FlatCurvedBoxMesh(
-                Vector2f( -(blockSize/2)*width + perBlockSpacing, (blockSize/2)*height  - perBlockSpacing),
-                Vector2f((blockSize/2)*width - perBlockSpacing, -(blockSize/2)*height  + perBlockSpacing),
+                Vector2f( -(blockSize/2)*width * gridSettings.scale + perBlockSpacing, (blockSize/2)*height * gridSettings.scale - perBlockSpacing),
+                Vector2f((blockSize/2)*width * gridSettings.scale - perBlockSpacing, -(blockSize/2)*height * gridSettings.scale + perBlockSpacing),
                 gridSettings.borderWidth* 0.48f, 3)
         )
         shadowMesh.setColor(1f,1f,1f,0.1f).setVisualClickBox(false)
@@ -63,12 +61,12 @@ class GridMeshGenerator(controller: ECSController) {
         val width = gridSettings.gridWidth
 
         val tempPerBlock =  2f / height //temporaryValue
-        val borderSpacing = tempPerBlock * gridSettings.edgeSpacingFactor //pure visual, te amount of space between the walls and the tiles
+        val borderSpacing = tempPerBlock * gridSettings.innerBorderEdgeShortening //pure visual, te amount of space between the walls and the tiles
         val borderWidth = gridSettings.borderWidth  //the total width of the wall (no the true visual with, that's borderEdgeWidth - borderSpacing)
         val blockSize = gridSettings.blockSize      //the size of a cube in the grid
         //val borderWidth = tempPerBlock * component.edgeWidthPercentage
         //val perBlock = tempPerBlock - (borderWidth * 2 / grid.size)
-        val perBlockSpacing = blockSize * gridSettings.blockSpacingFactor  //pure visual, the amount that the background will show through on the edge of every tile
+        val perBlockSpacing = blockSize * gridSettings.blockEdgeShortening  //pure visual, the amount that the background will show through on the edge of every tile
 
         val mostRight = blockSize * width / 2
         val mostTop = 1f - borderWidth
@@ -164,16 +162,15 @@ class GridMeshGenerator(controller: ECSController) {
             ).setColor(Colors.GRAY_NORMAL.get), zIndex
         )
 
-
+        //for these blocks we don't need to take in account the scale, that's because its already getting scaled  by the background
         for (i in 0 until height) {
+            val y=  mostTop - blockSize * i
             for (j in 0 until width) {
+                val x = -mostRight + blockSize * j
                 gridBackgroundMesh.addMesh(
                     FlatCurvedBoxMesh(
-                        Vector2f(-mostRight + blockSize * j + perBlockSpacing, mostTop - blockSize * i - perBlockSpacing),
-                        Vector2f(
-                            -mostRight + blockSize * j + blockSize - perBlockSpacing,
-                            mostTop - blockSize * (i + 1) + perBlockSpacing
-                        ),
+                        Vector2f( x + perBlockSpacing,y  - perBlockSpacing),
+                        Vector2f(x + blockSize - perBlockSpacing, y - blockSize + perBlockSpacing),
                         cornerRadius, 3
                     ).setColor(Colors.GRAY_DARK.get), zIndex
                 )

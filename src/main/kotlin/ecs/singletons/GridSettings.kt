@@ -1,14 +1,12 @@
 package ecs.singletons
 
-import base.util.Maf
 import ecs.components.GridLockedComponent
-import org.joml.Vector2f
 import org.joml.Vector2i
 
 class GridSettings {
-    val edgeSpacingFactor : Float = 0.08f
+    val innerBorderEdgeShortening : Float = 0.08f
     val cornerPercentage : Float = 0.48f
-    val blockSpacingFactor : Float = 0.05f
+    val blockEdgeShortening : Float = 0.05f
 
     var borderWidthPercentage = 0.3f
         private set
