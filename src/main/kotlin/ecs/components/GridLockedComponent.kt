@@ -25,9 +25,9 @@ class GridLockedComponent {
 
 
     fun getGLCLeftTopIndex(gLMousePos: Vector2f, gs : GridSettings) : Vector2i {
-        val scaledBlockSize = gs.blockSize * gs.scale
-        val mostLeft = -(scaledBlockSize * gs.gridWidth) / 2
-        val mostTop = gs.scale - gs.borderWidth * gs.scale
+        val scaledBlockSize = gs.blockSize * gs.zoom
+        val mostLeft =if(gs.lockYaxis) -(scaledBlockSize * gs.gridWidth) / 2 else -1f*gs.zoom + gs.borderWidth * gs.zoom
+        val mostTop = if(gs.lockYaxis) 1f*gs.zoom - gs.borderWidth * gs.zoom else (scaledBlockSize * gs.gridHeight) / 2
 
         val newLeft = mostLeft + (scaledBlockSize/2)*(width-1)
         val newTop = mostTop - (scaledBlockSize/2)*(height-1)
@@ -41,9 +41,10 @@ class GridLockedComponent {
         return Vector2i(relativeHorizontalIndex, relativeVerticalIndex)
     }
     fun getGLCGirdTransform(leftTopIndex: Vector2i, gs : GridSettings) : Vector2f {
-        val scaledBlockSize = gs.blockSize * gs.scale
-        val mostLeft = -(scaledBlockSize * gs.gridWidth) / 2
-        val mostTop = gs.scale - gs.borderWidth * gs.scale
+        val scaledBlockSize = gs.blockSize * gs.zoom
+        val mostLeft =if(gs.lockYaxis) -(scaledBlockSize * gs.gridWidth) / 2 else -1f*gs.zoom + gs.borderWidth * gs.zoom
+        val mostTop = if(gs.lockYaxis) 1f*gs.zoom - gs.borderWidth * gs.zoom else (scaledBlockSize * gs.gridHeight) / 2
+
         return Vector2f(mostLeft+ (scaledBlockSize/2)*width + scaledBlockSize*leftTopIndex.x,
             mostTop - (scaledBlockSize/2)*height - scaledBlockSize*leftTopIndex.y)
     }

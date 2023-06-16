@@ -31,11 +31,11 @@ class GridMeshGenerator(controller: ECSController) {
         val perBlockSpacing = blockSize * gridSettings.blockEdgeShortening
         shadowMesh.addMesh(
             FlatCurvedBoxMesh(
-                Vector2f( -(blockSize/2)*width * gridSettings.scale + perBlockSpacing, (blockSize/2)*height * gridSettings.scale - perBlockSpacing),
-                Vector2f((blockSize/2)*width * gridSettings.scale - perBlockSpacing, -(blockSize/2)*height * gridSettings.scale + perBlockSpacing),
+                Vector2f( -(blockSize/2)*width * gridSettings.zoom + perBlockSpacing, (blockSize/2)*height * gridSettings.zoom - perBlockSpacing),
+                Vector2f((blockSize/2)*width * gridSettings.zoom - perBlockSpacing, -(blockSize/2)*height * gridSettings.zoom + perBlockSpacing),
                 gridSettings.borderWidth* 0.48f, 3)
         )
-        shadowMesh.setColor(1f,1f,1f,0.1f).setVisualClickBox(false)
+        shadowMesh.setColor(1f,1f,1f,0.1f)
         shadowMesh.create()
         shadowMesh.depth = 0.05f
         shadowGLC.setHeight(height).setWidth(width)
@@ -55,7 +55,9 @@ class GridMeshGenerator(controller: ECSController) {
     }
 
     fun generateGridBackground() {
-        gridBackgroundTransform.setScale(gridSettings.scale)
+        gridBackgroundTransform.setScale(gridSettings.zoom)
+
+
         val zIndex = 1f //the lvl height index of the tiles or something (at least it's not that important because it's the height of only this openMesh, so it's not that important)
         val height = gridSettings.gridHeight
         val width = gridSettings.gridWidth
@@ -68,8 +70,9 @@ class GridMeshGenerator(controller: ECSController) {
         //val perBlock = tempPerBlock - (borderWidth * 2 / grid.size)
         val perBlockSpacing = blockSize * gridSettings.blockEdgeShortening  //pure visual, the amount that the background will show through on the edge of every tile
 
-        val mostRight = blockSize * width / 2
-        val mostTop = 1f - borderWidth
+        val mostRight = if(gridSettings.lockYaxis) blockSize * width / 2 else 1f - borderWidth
+        val mostTop = if(gridSettings.lockYaxis) 1f - borderWidth else blockSize * height /2
+
         val cornerRadius =
             if (borderWidth * gridSettings.cornerPercentage > borderWidth - borderSpacing) borderWidth - borderSpacing else borderWidth * gridSettings.cornerPercentage
         val nonRadBorder = borderWidth - cornerRadius

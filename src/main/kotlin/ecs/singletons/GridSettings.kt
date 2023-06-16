@@ -1,6 +1,7 @@
 package ecs.singletons
 
 import ecs.components.GridLockedComponent
+import org.joml.Vector2f
 import org.joml.Vector2i
 
 class GridSettings {
@@ -10,7 +11,7 @@ class GridSettings {
 
     var borderWidthPercentage = 0.3f
         private set
-    var scale = 0.9f
+    var zoom = 0.98f
         private set
 
     var gridWidth = 1
@@ -23,6 +24,26 @@ class GridSettings {
     var blockSize = (2f /gridHeight) - (borderWidth * 2 / gridHeight)
         private set
 
+    var viewBoxLeftTop = Vector2f(-1f, 1f)
+        private set
+    var viewBoxRightBot = Vector2f(1f , -1f)
+        private set
+    var lockYaxis = true
+        private set
+
+    fun setViewBox(leftTop: Vector2f, rightBot : Vector2f ) : GridSettings {
+        viewBoxLeftTop = leftTop
+        viewBoxRightBot = rightBot
+        reCalculateAttributes()
+        return this
+    }
+    fun setLocKYaxis(value : Boolean) : GridSettings {
+        lockYaxis = value
+        reCalculateAttributes()
+        return this
+    }
+
+
     fun setGrid(width: Int, height: Int) : GridSettings {
         this.gridWidth = width
         this.gridHeight= height
@@ -30,7 +51,7 @@ class GridSettings {
         return this
     }
     fun setScale(s : Float) : GridSettings {
-        scale = if(s > 0) s else 0f
+        zoom = if(s > 0) s else 0f
         reCalculateAttributes()
         return this
     }
@@ -44,9 +65,9 @@ class GridSettings {
     }
 
     private fun reCalculateAttributes(){
-        val tempValue = 2f / gridHeight
+        val tempValue = if(lockYaxis) 2f / gridHeight else  2f / gridWidth
         borderWidth = tempValue * borderWidthPercentage //the total width of the wall (no the true visual with, that's borderEdgeWidth - borderSpacing)
-        blockSize = tempValue - (borderWidth * 2 / gridHeight) //the size of a cube in the grid
+        blockSize = if(lockYaxis) tempValue - (borderWidth * 2 / gridHeight) else tempValue - (borderWidth * 2 / gridWidth) //the size of a cube in the grid
         occupationGird = Array(gridHeight) { IntArray(gridWidth) {-1} }
     }
 

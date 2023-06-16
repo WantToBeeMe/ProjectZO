@@ -25,11 +25,11 @@ class GLCBlock(controller :ECSController, width:Int, height: Int, gridSettings :
         val blockMesh = controller.assign<FlatMeshComponent>(id)
         blockMesh.addMesh(
                 FlatCurvedBoxMesh(
-                        Vector2f( -(blockSize/2)*width*gridSettings.scale + perBlockSpacing, (blockSize/2)*height*gridSettings.scale  - perBlockSpacing),
-                        Vector2f((blockSize/2)*width*gridSettings.scale - perBlockSpacing, -(blockSize/2)*height*gridSettings.scale  + perBlockSpacing),
+                        Vector2f( -(blockSize/2)*width*gridSettings.zoom + perBlockSpacing, (blockSize/2)*height*gridSettings.zoom  - perBlockSpacing),
+                        Vector2f((blockSize/2)*width*gridSettings.zoom - perBlockSpacing, -(blockSize/2)*height*gridSettings.zoom  + perBlockSpacing),
                         borderWidth* 0.48f, 3)
         )
-        blockMesh.setColor(Colors.BLUE.get).setVisualClickBox(false)
+        blockMesh.setColor(Colors.BLUE.get)
         blockMesh.create()
         blockMesh.depth = 0.1f
         transform = controller.assign<TransformComponent>(id)
