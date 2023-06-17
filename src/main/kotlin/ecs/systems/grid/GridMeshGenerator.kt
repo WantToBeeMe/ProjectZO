@@ -28,12 +28,12 @@ class GridMeshGenerator(controller: ECSController) {
         val width = glc.width
         val height = glc.height
         val blockSize = gridSettings.blockSize
-        val perBlockSpacing = blockSize * gridSettings.blockEdgeShortening
+        val perBlockSpacing = blockSize * gridSettings.blockEdgeShorteningPercentage
         shadowMesh.addMesh(
             FlatCurvedBoxMesh(
                 Vector2f( -(blockSize/2)*width+ perBlockSpacing, (blockSize/2)*height - perBlockSpacing),
                 Vector2f((blockSize/2)*width - perBlockSpacing, -(blockSize/2)*height + perBlockSpacing),
-                gridSettings.borderWidth* 0.48f, 3)
+                gridSettings.getCornerRadius(), 3)
         )
         shadowMesh.setColor(1f,1f,1f,0.1f)
         shadowMesh.create()
@@ -45,7 +45,9 @@ class GridMeshGenerator(controller: ECSController) {
         shadowMesh.clear()
     }
     fun showShadow(gLMouse : Vector2f){
-        shadowTransform.setScale(gridSettings.zoom)
+
+        shadowTransform.setScale(gridSettings.getScale())
+
         val leftTop = shadowGLC.getGLCLeftTopIndex(gLMouse, gridSettings)
         val transform = shadowGLC.getGLCGirdTransform(leftTop, gridSettings)
         shadowTransform.setPosition(transform)
@@ -55,7 +57,9 @@ class GridMeshGenerator(controller: ECSController) {
     }
 
     fun generateGridBackground() {
-        gridBackgroundTransform.setScale(gridSettings.zoom)
+        //todo: moet geuncomment worden maar eerst die andere fixen
+        gridBackgroundTransform.setScale( gridSettings.zoom)//gridSettings.getScale())
+        //gridBackgroundTransform.setPosition(gridSettings.viewBoxPosition)
 
 
         val zIndex = 1f //the lvl height index of the tiles or something (at least it's not that important because it's the height of only this openMesh, so it's not that important)
@@ -68,13 +72,12 @@ class GridMeshGenerator(controller: ECSController) {
         val blockSize = gridSettings.blockSize      //the size of a cube in the grid
         //val borderWidth = tempPerBlock * component.edgeWidthPercentage
         //val perBlock = tempPerBlock - (borderWidth * 2 / grid.size)
-        val perBlockSpacing = blockSize * gridSettings.blockEdgeShortening  //pure visual, the amount that the background will show through on the edge of every tile
+        val perBlockSpacing = blockSize * gridSettings.blockEdgeShorteningPercentage  //pure visual, the amount that the background will show through on the edge of every tile
 
         val mostRight = if(gridSettings.lockYaxis) blockSize * width / 2 else 1f - borderWidth
         val mostTop = if(gridSettings.lockYaxis) 1f - borderWidth else blockSize * height /2
 
-        val cornerRadius =
-            if (borderWidth * gridSettings.cornerPercentage > borderWidth - borderSpacing) borderWidth - borderSpacing else borderWidth * gridSettings.cornerPercentage
+        val cornerRadius = gridSettings.getCornerRadius()
         val nonRadBorder = borderWidth - cornerRadius
 
         //sides

@@ -7,7 +7,7 @@ import org.joml.Vector2i
 class GridSettings {
     val innerBorderEdgeShortening : Float = 0.08f
     val cornerPercentage : Float = 0.48f
-    val blockEdgeShortening : Float = 0.05f
+    val blockEdgeShorteningPercentage : Float = 0.05f
 
     var borderWidthPercentage = 0.3f
         private set
@@ -28,10 +28,14 @@ class GridSettings {
         private set
     var viewBoxRightBot = Vector2f(1f , -1f)
         private set
+    var viewBoxPosition = Vector2f(0f )
+        private set
     var lockYaxis = true
         private set
 
-    fun setViewBox(leftTop: Vector2f, rightBot : Vector2f ) : GridSettings {
+
+
+     fun setViewBox(leftTop: Vector2f, rightBot : Vector2f ) : GridSettings {
         viewBoxLeftTop = leftTop
         viewBoxRightBot = rightBot
         reCalculateAttributes()
@@ -42,7 +46,6 @@ class GridSettings {
         reCalculateAttributes()
         return this
     }
-
 
     fun setGrid(width: Int, height: Int) : GridSettings {
         this.gridWidth = width
@@ -64,10 +67,21 @@ class GridSettings {
         return this
     }
 
+    fun getScale() : Float{
+        return if(lockYaxis) (viewBoxLeftTop.y-viewBoxRightBot.y) * zoom /2
+        else (viewBoxRightBot.x-viewBoxLeftTop.x) * zoom /2
+    }
+    fun getCornerRadius() : Float{
+        val borderSpacing = 2f / gridHeight  * innerBorderEdgeShortening
+        return if (borderWidth * cornerPercentage > borderWidth - borderSpacing) borderWidth - borderSpacing
+            else borderWidth * cornerPercentage
+    }
+
     private fun reCalculateAttributes(){
         val tempValue = if(lockYaxis) 2f / gridHeight else  2f / gridWidth
         borderWidth = tempValue * borderWidthPercentage //the total width of the wall (no the true visual with, that's borderEdgeWidth - borderSpacing)
         blockSize = if(lockYaxis) tempValue - (borderWidth * 2 / gridHeight) else tempValue - (borderWidth * 2 / gridWidth) //the size of a cube in the grid
+        viewBoxPosition = Vector2f(viewBoxLeftTop.x + viewBoxRightBot.x , viewBoxLeftTop.y + viewBoxRightBot.y).mul(0.5f)
         occupationGird = Array(gridHeight) { IntArray(gridWidth) {-1} }
     }
 
