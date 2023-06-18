@@ -41,11 +41,14 @@ class GridMeshGenerator(controller: ECSController) {
         shadowTransform.setScale(0f)
     }
     fun hideShadow(){
+        shadowTransform.setScale(0f)
+    }
+    fun clearShadow(){
         shadowMesh.clear()
     }
     fun showShadow(gLMouse : Vector2f){
 
-        shadowTransform.setScale(gridSettings.zoom * gridSettings.blockSize)
+        shadowTransform.setScale(gridSettings.getScale() * gridSettings.blockSize)
 
         val leftTop = shadowGLC.getGLCLeftTopIndex(gLMouse, gridSettings)
         val transform = shadowGLC.getGLCGirdTransform(leftTop, gridSettings)
@@ -57,7 +60,7 @@ class GridMeshGenerator(controller: ECSController) {
 
     fun generateGridBackground() {
         //todo: moet geuncomment worden maar eerst die andere fixen
-        gridBackgroundTransform.setScale( gridSettings.zoom)//gridSettings.getScale())
+        gridBackgroundTransform.setScale( gridSettings.getScale())//gridSettings.getScale())
         //gridBackgroundTransform.setPosition(gridSettings.viewBoxPosition)
 
 

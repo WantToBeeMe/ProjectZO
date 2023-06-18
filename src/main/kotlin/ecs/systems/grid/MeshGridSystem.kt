@@ -51,12 +51,17 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
     override fun update(dt: Float) {
         super.update(dt)
         val camera = controller.getSingleton<Camera>()
-        //val gridSettings = controller.getSingleton<GridSettings>()
+        val gridSettings = controller.getSingleton<GridSettings>()
         val gLMouse = Maf.pixelToGLCords(Mouse.getX(),Mouse.getY(),camera.aspect)
-
+        val lt = gridSettings.viewBoxLeftTop
+        val rb = gridSettings.viewBoxRightBot
+        val isInside = (lt.x < gLMouse.x && rb.x > gLMouse.x) && ( lt.y > gLMouse.y && rb.y < gLMouse.y )
         if(holding == null) return
         holding!!.second.first.setPosition(gLMouse)
-        gridMeshGenerator.showShadow(gLMouse)
+        if(isInside)
+            gridMeshGenerator.showShadow(gLMouse)
+        else
+            gridMeshGenerator.hideShadow()
     }
 
     override fun onMouseClick(xPos: Double, yPos: Double, button: Int) {
@@ -69,7 +74,7 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
             if(gLComponent.second.isInside(Maf.revertTransform(gLMouse,gLComponent.first))){
                 holding = Pair(gLCKey,gLComponent)
                 oldIndex = gridSettings.removeGLC(gLCKey)
-                gLComponent.first.setScale(0.15f)
+                gLComponent.first.setScale(gridSettings.getScale() * gridSettings.blockSize * 0.9f)
                 gridMeshGenerator.createShadow(gLComponent.third)
                 break
             }
@@ -81,8 +86,12 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
         val gridSettings = controller.getSingleton<GridSettings>()
         val GLC = holding!!.second.third
         val camera = controller.getSingleton<Camera>()
-        val leftTop = GLC.getGLCLeftTopIndex(  Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),camera.aspect) , gridSettings)
-        if(gridSettings.canAddGLC(GLC,leftTop.x, leftTop.y)){
+        val gLMouse = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),camera.aspect)
+        val leftTop = GLC.getGLCLeftTopIndex(  gLMouse , gridSettings)
+        val lt = gridSettings.viewBoxLeftTop
+        val rb = gridSettings.viewBoxRightBot
+        val isInside = (lt.x < gLMouse.x && rb.x > gLMouse.x) && ( lt.y > gLMouse.y && rb.y < gLMouse.y )
+        if(isInside && gridSettings.canAddGLC(GLC,leftTop.x, leftTop.y)){
             gridSettings.addGLC( holding!!.first, GLC,leftTop.x, leftTop.y  )
             val transform = GLC.getGLCGirdTransform(leftTop , gridSettings)
             holding!!.second.first.setPosition(transform)
@@ -98,8 +107,8 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
             return //returning early because you it cant be placed
             //idk what to do here yet
         }
-        gridMeshGenerator.hideShadow()
-        holding!!.second.first.setScale(gridSettings.zoom * gridSettings.blockSize)
+        gridMeshGenerator.clearShadow()
+        holding!!.second.first.setScale(gridSettings.getScale() * gridSettings.blockSize)
         holding = null
 
     }
