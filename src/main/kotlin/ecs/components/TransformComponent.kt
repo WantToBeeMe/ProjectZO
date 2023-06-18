@@ -63,10 +63,10 @@ class TransformComponent  {
         return if(getRad) _rotation else Math.toDegrees(_rotation.toDouble()).toFloat()
     }
     fun getPosition() : Vector2f{
-        return _position
+        return Vector2f(_position)
     }
     fun getScale() : Vector2f{
-        return _scale
+        return Vector2f(_scale)
     }
 
 }

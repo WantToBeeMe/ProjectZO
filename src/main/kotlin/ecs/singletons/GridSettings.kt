@@ -28,7 +28,7 @@ class GridSettings {
         private set
     var viewBoxRightBot = Vector2f(1f , -1f)
         private set
-    var viewBoxPosition = Vector2f(0f )
+    var gridPosition = Vector2f(0f )
         private set
     var lockYaxis = true
         private set
@@ -81,7 +81,7 @@ class GridSettings {
         val tempValue = if(lockYaxis) 2f / gridHeight else  2f / gridWidth
         borderWidth = tempValue * borderWidthPercentage //the total width of the wall (no the true visual with, that's borderEdgeWidth - borderSpacing)
         blockSize = if(lockYaxis) tempValue - (borderWidth * 2 / gridHeight) else tempValue - (borderWidth * 2 / gridWidth) //the size of a cube in the grid
-        viewBoxPosition = Vector2f(viewBoxLeftTop.x + viewBoxRightBot.x , viewBoxLeftTop.y + viewBoxRightBot.y).mul(0.5f)
+        gridPosition = Vector2f(viewBoxLeftTop.x + viewBoxRightBot.x , viewBoxLeftTop.y + viewBoxRightBot.y).mul(0.5f)
         occupationGird = Array(gridHeight) { IntArray(gridWidth) {-1} }
     }
 

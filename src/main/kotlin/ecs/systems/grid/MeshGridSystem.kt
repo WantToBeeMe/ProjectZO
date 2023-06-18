@@ -32,10 +32,7 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
 
         GLCBlock(controller,1,1, gridSettings.blockEdgeShorteningPercentage, gridSettings.getCornerRadius() / gridSettings.blockSize )
         GLCBlock(controller,2,2, gridSettings.blockEdgeShorteningPercentage, gridSettings.getCornerRadius() / gridSettings.blockSize )
-       // GLCBlock(controller,3,4, gridSettings.blockEdgeShorteningPercentage, gridSettings.getCornerRadius() / gridSettings.blockSize )
         GLCBlock(controller,3,2, gridSettings.blockEdgeShorteningPercentage, gridSettings.getCornerRadius() / gridSettings.blockSize )
-       // GLCBlock(controller,4,3, gridSettings.blockEdgeShorteningPercentage, gridSettings.getCornerRadius() / gridSettings.blockSize )
-       // GLCBlock(controller,2,4, gridSettings.blockEdgeShorteningPercentage, gridSettings.getCornerRadius() / gridSettings.blockSize )
     }
     override fun stop() {
         super.stop()
@@ -58,6 +55,7 @@ object MeshGridSystem  : IEntityComponentSystem(), IMouseClickObserver {
         val isInside = (lt.x < gLMouse.x && rb.x > gLMouse.x) && ( lt.y > gLMouse.y && rb.y < gLMouse.y )
         if(holding == null) return
         holding!!.second.first.setPosition(gLMouse)
+
         if(isInside)
             gridMeshGenerator.showShadow(gLMouse)
         else

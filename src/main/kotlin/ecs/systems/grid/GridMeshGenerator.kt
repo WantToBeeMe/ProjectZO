@@ -60,8 +60,8 @@ class GridMeshGenerator(controller: ECSController) {
 
     fun generateGridBackground() {
         //todo: moet geuncomment worden maar eerst die andere fixen
-        gridBackgroundTransform.setScale( gridSettings.getScale())//gridSettings.getScale())
-        //gridBackgroundTransform.setPosition(gridSettings.viewBoxPosition)
+        gridBackgroundTransform.setScale( gridSettings.getScale())
+        gridBackgroundTransform.setPosition(gridSettings.gridPosition)
 
 
         val zIndex = 1f //the lvl height index of the tiles or something (at least it's not that important because it's the height of only this openMesh, so it's not that important)

@@ -22,11 +22,11 @@ open class FlatMesh {
     }
 
     // Adds a quad (rectangle) to the mesh using two diagonal points
-    fun addQuad(leftTop: Vector2f, rightBot: Vector2f) {
+    fun addQuad(leftTop: Vector2f, rightBot: Vector2f){
         return addQuad(leftTop.x, leftTop.y, rightBot.x, rightBot.y)
     }
     // Adds a quad (rectangle) to the mesh using the coordinates of the top-left and bottom-right points
-    fun addQuad(startX: Float, startY: Float, endX: Float, endY: Float) {
+    fun addQuad(startX: Float, startY: Float, endX: Float, endY: Float){
         // Add four vertices for the quad
         val v1 = addVertex(endX, startY)
         val v2 = addVertex(endX, endY)
