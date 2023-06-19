@@ -46,6 +46,9 @@ class HomeScene : IScene() {
         val b = Button(controller,0.8f,0.2f ) {_,_ -> Game.changeScene(InteractScene())}
         b.transform.setRotation(20f)
 
+        val c = Button(controller,0.6f,0.3f ) {_,_ -> Game.changeScene(InteractScene())}
+        c.transform.setRotation(-20f)
+
         val block = Pair(Vector2f(-0.2f, 0.2f), Vector2f(0.2f, -0.2f))
         val block1ID = controller.createEntity()
         val block1Mesh = controller.assign<FlatMeshComponent>(block1ID)
@@ -58,6 +61,7 @@ class HomeScene : IScene() {
         block1ClickBox.setOnClick {s,_ -> holding1 = block1Transform.getPosition().add(-s.x, -s.y) }
         block1ClickBox.setOnRelease{ _,_ -> holding1 = null }
 
+
         val block2ID = controller.createEntity()
         val block2Mesh = controller.assign<FlatMeshComponent>(block2ID)
         block2Mesh.setColor(Colors.YELLOW.get)
@@ -67,6 +71,7 @@ class HomeScene : IScene() {
         val block2ClickBox = controller.assign<ClickBoxComponent>(block2ID).addClickBox( RectangleClickBox(block.first, block.second ) )
         block2ClickBox.setOnClick {s,_ -> holding2 = block2Transform.getPosition().add(-s.x, -s.y) }
         block2ClickBox.setOnRelease{ _,_ -> holding2 = null }
+        block2ClickBox.priority = 1
     }
 
     override fun loop(dt: Float) {

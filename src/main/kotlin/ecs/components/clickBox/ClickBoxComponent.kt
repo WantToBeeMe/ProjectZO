@@ -15,6 +15,7 @@ class ClickBoxComponent {
         private set
 
     var hovering = false
+    var priority = 0
 
     fun addClickBox(box : IClickBox) : ClickBoxComponent{
         clickBoxes.add(box)

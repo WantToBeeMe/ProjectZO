@@ -25,14 +25,18 @@ object MeshInteractSystem : IEntityComponentSystem(), IMouseClickObserver {
 
     override fun update(dt: Float) {
         super.update(dt)
+        var hovering = false //this makes sure there can only be 1 hovering at a time
         val transforms = controller.getComponents<TransformComponent>()
         val flatClickBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, ClickBoxComponent>()
+        val sortedFlatClickBoxMeshes = flatClickBoxMeshes.entries.sortedByDescending { it.value.second.priority }
+
         val camera = controller.getSingleton<Camera>()
         val realMousePos = Maf.pixelToGLCords(Mouse.getX(),Mouse.getY(),camera.aspect)
 
-        for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
+        for ((entityID, clickBoxMesh) in sortedFlatClickBoxMeshes) {
             val transformedMousePos = Maf.revertTransform(realMousePos, transforms[entityID])
-            if (clickBoxMesh.second.isInside( transformedMousePos )) {
+            if (clickBoxMesh.second.isInside( transformedMousePos ) && !hovering) {
+                hovering = true
                 if (!clickBoxMesh.second.hovering) {
                     clickBoxMesh.second.hovering = true
                     clickBoxMesh.second.onEnterEvent?.let { it(realMousePos) }
@@ -47,26 +51,34 @@ object MeshInteractSystem : IEntityComponentSystem(), IMouseClickObserver {
     override fun onMouseClick(xPos: Double, yPos: Double, button: Int) {
         val transforms = controller.getComponents<TransformComponent>()
         val flatClickBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, ClickBoxComponent>()
+        val sortedFlatClickBoxMeshes = flatClickBoxMeshes.entries.sortedByDescending { it.value.second.priority }
+
         val camera = controller.getSingleton<Camera>()
         val realMousePos = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),camera.aspect)
 
-        for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
+        for ((entityID, clickBoxMesh) in sortedFlatClickBoxMeshes) {
             val transformedMousePos = Maf.revertTransform(realMousePos, transforms[entityID])
-            if (clickBoxMesh.second.isInside(transformedMousePos))
+            if (clickBoxMesh.second.isInside(transformedMousePos)){
                 clickBoxMesh.second.onClickEvent?.let { it(realMousePos, button) }
+                return
+            }
         }
     }
 
     override fun onMouseRelease(xPos: Double, yPos: Double, button: Int) {
         val transforms = controller.getComponents<TransformComponent>()
         val flatClickBoxMeshes = controller.getDoubleComponents<FlatMeshComponent, ClickBoxComponent>()
+        val sortedFlatClickBoxMeshes = flatClickBoxMeshes.entries.sortedByDescending { it.value.second.priority }
+
         val camera = controller.getSingleton<Camera>()
         val realMousePos = Maf.pixelToGLCords(xPos.toFloat(),yPos.toFloat(),camera.aspect)
 
-        for ((entityID, clickBoxMesh) in flatClickBoxMeshes) {
+        for ((entityID, clickBoxMesh) in sortedFlatClickBoxMeshes) {
             val transformedMousePos = Maf.revertTransform(realMousePos, transforms[entityID])
-            if (clickBoxMesh.second.isInside(transformedMousePos))
+            if (clickBoxMesh.second.isInside(transformedMousePos)) {
                 clickBoxMesh.second.onReleaseEvent?.let { it(realMousePos, button) }
+                //return
+            }
         }
     }
 }

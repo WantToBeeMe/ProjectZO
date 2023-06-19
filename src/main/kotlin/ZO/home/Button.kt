@@ -18,6 +18,7 @@ class Button(controller : ECSController, width : Float, height: Float, event: ((
     val transform: TransformComponent
     private val mesh : FlatMeshComponent
 
+    private var currentlyClicking = false
     init{
         id = controller.createEntity()
 
@@ -33,8 +34,9 @@ class Button(controller : ECSController, width : Float, height: Float, event: ((
 
         controller.assign<ClickBoxComponent>(id)
             .addClickBox( RectangleClickBox(size.first,size.second) )
+            .setOnClick {_,_ -> currentlyClicking = true}
             .setOnEnter {_ -> mesh.setColor(Vector4f(tint,tint,tint,0f).add(defaultColor)) }
-            .setOnLeave {_ -> mesh.setColor(defaultColor) }
-            .setOnRelease(event)
+            .setOnLeave {_ -> mesh.setColor(defaultColor); currentlyClicking = false }
+            .setOnRelease {pos,type -> if(currentlyClicking) event(pos,type) }
     }
 }
