@@ -4,7 +4,7 @@ import ecs.components.GridLockedComponent
 import org.joml.Vector2f
 import org.joml.Vector2i
 
-class GridSettings {
+class GridSettings(val gridWidth : Int = 1, val gridHeight : Int = 1) {
     val innerBorderEdgeShortening : Float = 0.08f
     val cornerPercentage : Float = 0.48f
     val blockEdgeShorteningPercentage : Float = 0.05f
@@ -14,10 +14,12 @@ class GridSettings {
     var zoom = 0.98f
         private set
 
-    var gridWidth = 1
-    var gridHeight = 1
 
-    private var occupationGird :  Array<IntArray> =  arrayOf(IntArray(1) {-1})
+    //first height,  second width
+    private var occupationGird :  Array<IntArray> =  Array(gridHeight) { IntArray(gridWidth) {-1} }
+    fun getOccupationGird() : Array<IntArray>{
+        return occupationGird.clone()
+    }
 
     var borderWidth = (2f / gridHeight) * borderWidthPercentage
         private set
@@ -33,7 +35,9 @@ class GridSettings {
     var lockYaxis = true
         private set
 
-
+    fun setPosition(newPos : Vector2f){
+        gridPosition = newPos
+    }
 
      fun setViewBox(leftTop: Vector2f, rightBot : Vector2f ) : GridSettings {
         viewBoxLeftTop = leftTop
@@ -47,12 +51,6 @@ class GridSettings {
         return this
     }
 
-    fun setGrid(width: Int, height: Int) : GridSettings {
-        this.gridWidth = width
-        this.gridHeight= height
-        reCalculateAttributes()
-        return this
-    }
     fun setScale(s : Float) : GridSettings {
         zoom = if(s > 0) s else 0f
         reCalculateAttributes()
@@ -67,6 +65,7 @@ class GridSettings {
         return this
     }
 
+
     fun getScale() : Float{
         return if(lockYaxis) (viewBoxLeftTop.y-viewBoxRightBot.y) * zoom /2
         else (viewBoxRightBot.x-viewBoxLeftTop.x) * zoom /2
@@ -76,13 +75,16 @@ class GridSettings {
         return if (borderWidth * cornerPercentage > borderWidth - borderSpacing) borderWidth - borderSpacing
             else borderWidth * cornerPercentage
     }
+    fun getCenterViewBox() : Vector2f{
+        return Vector2f(viewBoxLeftTop.x + viewBoxRightBot.x , viewBoxLeftTop.y + viewBoxRightBot.y).mul(0.5f)
+    }
+
 
     private fun reCalculateAttributes(){
         val tempValue = if(lockYaxis) 2f / gridHeight else  2f / gridWidth
         borderWidth = tempValue * borderWidthPercentage //the total width of the wall (no the true visual with, that's borderEdgeWidth - borderSpacing)
         blockSize = if(lockYaxis) tempValue - (borderWidth * 2 / gridHeight) else tempValue - (borderWidth * 2 / gridWidth) //the size of a cube in the grid
-        gridPosition = Vector2f(viewBoxLeftTop.x + viewBoxRightBot.x , viewBoxLeftTop.y + viewBoxRightBot.y).mul(0.5f)
-        occupationGird = Array(gridHeight) { IntArray(gridWidth) {-1} }
+        gridPosition = getCenterViewBox()
     }
 
     fun canAddGLC(comp : GridLockedComponent, leftIndex : Int, topIndex: Int) : Boolean{ //it's the left- Top-Index because some gridLockedComponents can have a bigger size then 1
@@ -98,8 +100,8 @@ class GridSettings {
     }
     fun addGLC(id: Int, comp : GridLockedComponent, leftIndex : Int, topIndex: Int){
         if(!canAddGLC(comp, leftIndex, topIndex)) return
-        for(horIndex in leftIndex until leftIndex+comp.width){
-            for(verIndex in topIndex until topIndex+comp.height){
+        for(horIndex in leftIndex until leftIndex+comp.width) {
+            for (verIndex in topIndex until topIndex + comp.height) {
                 occupationGird[verIndex][horIndex] = id
             }
         }
@@ -117,6 +119,8 @@ class GridSettings {
         }
         return oldIndex
     }
+
+
 
 
     override fun toString(): String {

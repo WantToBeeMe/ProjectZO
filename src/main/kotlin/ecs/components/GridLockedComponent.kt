@@ -12,6 +12,7 @@ class GridLockedComponent {
     var height = 1
         private set
 
+
     fun setWidth(w : Int) : GridLockedComponent{
         width = w
         return this

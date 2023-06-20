@@ -16,11 +16,10 @@ import org.joml.Vector2f
 
 
 class InGameScene : IScene() {
-    private val viewBox = Pair(Vector2f(-0.8f,0.9f),  Vector2f(1.4f,-0.8f))
 
     init {
         controller.addSingleton(Camera())
-        controller.addSingleton(GridSettings().setGrid(17, 10).setScale(0.9f).setBorderWidthPercentage(0.3f).setViewBox(viewBox.first, viewBox.second).setLocKYaxis(true))
+        controller.addSingleton(GridSettings(17, 10).setScale(0.9f).setBorderWidthPercentage(0.3f).setLocKYaxis(true))
 
         controller.setSystems(
                 MeshInteractSystem,
@@ -39,14 +38,6 @@ class InGameScene : IScene() {
 
     override fun start() {
         super.start()
-
-        val viewBoxID = controller.createEntity()
-       val  viewBoxMesh = controller.assign<FlatMeshComponent>(viewBoxID)
-        viewBoxMesh.addQuad(viewBox.first,viewBox.second)
-        viewBoxMesh.setColor(0f,1f,1f,0.05f)
-        viewBoxMesh.create()
-        viewBoxMesh.depth = 0.1f
-
 
 
     }

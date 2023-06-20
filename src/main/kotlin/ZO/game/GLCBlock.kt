@@ -33,7 +33,7 @@ class GLCBlock(controller :ECSController, width:Int, height: Int, blockEdgeShort
         GLC = controller.assign<GridLockedComponent>(id).setWidth(width).setHeight(height)
         controller.assign<ClickBoxComponent>(id).addClickBox( RectangleClickBox(
             Vector2f(-0.5f * width + blockEdgeShorteningPercentage, 0.5f * height - blockEdgeShorteningPercentage),
-            Vector2f(0.5f * width - blockEdgeShorteningPercentage, -0.5f * height + blockEdgeShorteningPercentage)) )
+            Vector2f(0.5f * width - blockEdgeShorteningPercentage, -0.5f * height + blockEdgeShorteningPercentage)) ).priority = 1
 
     }
 

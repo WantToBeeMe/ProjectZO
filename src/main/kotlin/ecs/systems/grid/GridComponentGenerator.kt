@@ -4,6 +4,8 @@ import base.util.Colors
 import ecs.ECSController
 import ecs.components.GridLockedComponent
 import ecs.components.TransformComponent
+import ecs.components.clickBox.ClickBoxComponent
+import ecs.components.clickBox.RectangleClickBox
 import ecs.components.mesh.FlatMeshComponent
 import ecs.singletons.GridSettings
 import ecs.components.mesh.OpenMeshComponent
@@ -12,7 +14,7 @@ import ecs.components.mesh.customTemplates.FlatCustomCurveMesh
 import ecs.components.mesh.customTemplates.FlatOuterCurveMesh
 import org.joml.Vector2f
 
-class GridMeshGenerator(controller: ECSController) {
+class GridComponentGenerator(controller: ECSController) {
     private val gridBackgroundID = controller.createEntity()
     private val gridBackgroundMesh = controller.assign<OpenMeshComponent>(gridBackgroundID)
     private val gridBackgroundTransform = controller.assign<TransformComponent>(gridBackgroundID)
@@ -21,6 +23,10 @@ class GridMeshGenerator(controller: ECSController) {
     private val shadowMesh = controller.assign<FlatMeshComponent>(shadowID)
     private val shadowGLC = controller.assign<GridLockedComponent>(shadowID).setWidth(1).setHeight(1)
     private val shadowTransform = controller.assign<TransformComponent>(shadowID)
+
+    private val viewBoxID = controller.createEntity()
+    private val viewClickBox = controller.assign<ClickBoxComponent>(viewBoxID)
+    private val currentClickBox : RectangleClickBox? = null
 
     private lateinit var gridSettings : GridSettings
 
@@ -58,10 +64,14 @@ class GridMeshGenerator(controller: ECSController) {
         else shadowMesh.setColor(1f,0f,0f,0.1f)
     }
 
+    fun setGridPosition(pos : Vector2f){
+        gridBackgroundTransform.setPosition(pos)
+    }
     fun generateGridBackground() {
-        //todo: moet geuncomment worden maar eerst die andere fixen
+        clearBackground()
+
         gridBackgroundTransform.setScale( gridSettings.getScale())
-        gridBackgroundTransform.setPosition(gridSettings.gridPosition)
+        setGridPosition(gridSettings.gridPosition)
 
 
         val zIndex = 1f //the lvl height index of the tiles or something (at least it's not that important because it's the height of only this openMesh, so it's not that important)
@@ -189,10 +199,11 @@ class GridMeshGenerator(controller: ECSController) {
     }
 
     fun clearBackground(){
+        if(currentClickBox != null ) viewClickBox.removeClickBox(currentClickBox)
         gridBackgroundMesh.clear()
     }
 
-    fun setSettings(settings : GridSettings) : GridMeshGenerator{
+    fun setSettings(settings : GridSettings) : GridComponentGenerator{
         this.gridSettings = settings
         return this
     }
